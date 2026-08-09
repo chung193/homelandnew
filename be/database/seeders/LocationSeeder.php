@@ -11,7 +11,7 @@ class LocationSeeder extends Seeder
 {
     public function run(): void
     {
-        $provincesData = $this->fetchJson('https://provinces.open-api.vn/api/p/');
+        $provincesData = $this->fetchJson('https://provinces.open-api.vn/api/v1/p/');
 
         if (! is_array($provincesData)) {
             $this->command->warn('Unable to fetch provinces from the remote API.');
@@ -35,7 +35,7 @@ class LocationSeeder extends Seeder
                 ]
             );
 
-            $detail = $this->fetchJson('https://provinces.open-api.vn/api/p/' . $provinceData['code'] . '?depth=2');
+            $detail = $this->fetchJson($this->buildDetailUrl((int) $provinceData['code']));
 
             if (! is_array($detail)) {
                 continue;
@@ -78,6 +78,11 @@ class LocationSeeder extends Seeder
                 }
             }
         }
+    }
+
+    protected function buildDetailUrl(int $provinceCode): string
+    {
+        return 'https://provinces.open-api.vn/api/v1/p/' . $provinceCode . '?depth=3';
     }
 
     private function fetchJson(string $url): mixed

@@ -16,6 +16,7 @@ class PropertySchema extends Schema
             'listing-type' => $this->stringField(),
             'description' => $this->stringField(),
             'address' => $this->stringField(),
+            'address-detail' => $this->stringField(),
             'city' => $this->stringField(),
             'district' => $this->stringField(),
             'ward' => $this->stringField(),

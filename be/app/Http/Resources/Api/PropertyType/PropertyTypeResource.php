@@ -22,9 +22,13 @@ class PropertyTypeResource extends JsonResource
                         'id' => $amenity->id,
                         'name' => $amenity->name,
                         'slug' => $amenity->slug,
+                        'icon' => $amenity->icon,
                     ];
                 });
             }),
+            'amenity_ids' => $this->relationLoaded('amenities')
+                ? $this->amenities->pluck('id')->values()->all()
+                : [],
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];

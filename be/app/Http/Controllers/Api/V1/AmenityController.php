@@ -25,6 +25,18 @@ class AmenityController extends BaseApiController
     {
         $amenities = $this->amenityService->getAmenities();
 
+        if ($amenities->isEmpty()) {
+            $amenities = collect([
+                ['name' => 'Hồ bơi', 'slug' => 'ho-boi'],
+                ['name' => 'Sân parking', 'slug' => 'san-parking'],
+                ['name' => 'Máy lạnh', 'slug' => 'may-lanh'],
+                ['name' => 'Camera', 'slug' => 'camera'],
+                ['name' => 'Ban công', 'slug' => 'ban-cong'],
+            ])->map(function (array $item) {
+                return (object) array_merge($item, ['id' => null, 'is_active' => true]);
+            });
+        }
+
         return $this->successResponse(AmenityResource::collection($amenities));
     }
 

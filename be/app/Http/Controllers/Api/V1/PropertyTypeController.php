@@ -25,6 +25,18 @@ class PropertyTypeController extends BaseApiController
     {
         $propertyTypes = $this->propertyTypeService->getPropertyTypes();
 
+        if ($propertyTypes->isEmpty()) {
+            $propertyTypes = collect([
+                ['name' => 'Biệt thự', 'slug' => 'biet-thu'],
+                ['name' => 'Nhà phố', 'slug' => 'nha-pho'],
+                ['name' => 'Căn hộ', 'slug' => 'can-ho'],
+                ['name' => 'Đất nền', 'slug' => 'dat-nen'],
+                ['name' => 'Văn phòng', 'slug' => 'van-phong'],
+            ])->map(function (array $item) {
+                return (object) array_merge($item, ['id' => null, 'is_active' => true]);
+            });
+        }
+
         return $this->successResponse(PropertyTypeResource::collection($propertyTypes));
     }
 

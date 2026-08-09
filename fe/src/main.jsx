@@ -6,6 +6,7 @@ import './i18n';
 import { HelmetProvider } from 'react-helmet-async';
 import { Provider } from "react-redux";
 import store from "@redux/store";
+import { BrowserRouter } from 'react-router-dom';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import '@fontsource/inter/300.css';
 import '@fontsource/inter/400.css';
@@ -16,7 +17,9 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <Provider store={store}>
       <HelmetProvider>
-        <App />
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
       </HelmetProvider>
     </Provider>
   </StrictMode>,

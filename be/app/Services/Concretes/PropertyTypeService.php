@@ -21,17 +21,17 @@ class PropertyTypeService extends BaseService implements PropertyTypeServiceInte
 
     public function getPropertyTypes(): Collection
     {
-        return $this->repository->getFiltered();
+        return $this->propertyTypeRepository->getFiltered();
     }
 
     public function getActivePropertyTypes(): Collection
     {
-        return $this->repository->getActivePropertyTypes();
+        return $this->propertyTypeRepository->getActivePropertyTypes();
     }
 
     public function getFilteredPropertyTypes(?Request $request = null, int $perPage = 15): LengthAwarePaginator
     {
-        return $this->repository->getFilteredPropertyTypes($request, $perPage);
+        return $this->propertyTypeRepository->getFilteredPropertyTypes($request, $perPage);
     }
 
     public function getPropertyTypeById(int $id): ?Model
@@ -47,12 +47,35 @@ class PropertyTypeService extends BaseService implements PropertyTypeServiceInte
     {
         $data['slug'] = $data['slug'] ?? Str::slug($data['name'] ?? 'property-type');
         $data['is_active'] = $data['is_active'] ?? true;
-        return $this->repository->create($data);
+
+        $amenityIds = $data['amenity_ids'] ?? null;
+        unset($data['amenity_ids']);
+
+        $propertyType = $this->repository->create($data);
+
+        if ($amenityIds !== null) {
+            $propertyType->amenities()->sync($amenityIds);
+        }
+
+        $propertyType->load('amenities');
+
+        return $propertyType;
     }
 
     public function updatePropertyType(int $id, array $data): Model
     {
-        return $this->repository->update($id, $data);
+        $amenityIds = $data['amenity_ids'] ?? null;
+        unset($data['amenity_ids']);
+
+        $propertyType = $this->repository->update($id, $data);
+
+        if ($amenityIds !== null) {
+            $propertyType->amenities()->sync($amenityIds);
+        }
+
+        $propertyType->load('amenities');
+
+        return $propertyType;
     }
 
     public function deletePropertyType(int $id): bool

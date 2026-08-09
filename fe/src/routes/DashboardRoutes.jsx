@@ -20,6 +20,10 @@ import ChatGroup from '@pages/Dashboard/ChatGroup';
 import VideoCall from '@pages/Dashboard/VideoCall';
 
 import Calendar from '@pages/Dashboard/Calendar';
+import Property from '@pages/Dashboard/Property/Property';
+import PropertyCreatePage from '@pages/Dashboard/Property/PropertyCreatePage';
+import PropertyType from '@pages/Dashboard/PropertyType/PropertyType';
+import Amenity from '@pages/Dashboard/Amenity/Amenity';
 
 export const DashboardRoutes = [
     {
@@ -44,7 +48,11 @@ export const DashboardRoutes = [
             { path: 'chat', element: <Chat /> },
             { path: 'chat-group', element: <ChatGroup /> },
             { path: 'video-call', element: <VideoCall /> },
-            { path: 'calendar', element: <Calendar /> }
+            { path: 'calendar', element: <Calendar /> },
+            { path: 'property', element: <Property /> },
+            { path: 'property/create', element: <PropertyCreatePage /> },
+            { path: 'property-type', element: <PropertyType /> },
+            { path: 'amenity', element: <Amenity /> }
         ]
     }
 ];

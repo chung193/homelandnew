@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Str;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class PropertyService extends BaseService implements PropertyServiceInterface
 {
@@ -54,10 +55,27 @@ class PropertyService extends BaseService implements PropertyServiceInterface
         $amenities = $data['amenities'] ?? null;
         unset($data['amenities']);
 
+        $images = $data['images'] ?? null;
+        unset($data['images']);
+
+        $featuredImage = $data['featured_image'] ?? null;
+        unset($data['featured_image']);
+
         $property = $this->repository->create($data);
 
         if ($amenities) {
             $property->amenities()->sync($amenities);
+        }
+
+        if ($featuredImage) {
+            $property->clearMediaCollection('featured_image');
+            $property->addMedia($featuredImage)->toMediaCollection('featured_image');
+        }
+
+        if ($images) {
+            foreach ($images as $image) {
+                $property->addMedia($image)->toMediaCollection('gallery');
+            }
         }
 
         $property->load('amenities');
@@ -70,10 +88,27 @@ class PropertyService extends BaseService implements PropertyServiceInterface
         $amenities = $data['amenities'] ?? null;
         unset($data['amenities']);
 
+        $images = $data['images'] ?? null;
+        unset($data['images']);
+
+        $featuredImage = $data['featured_image'] ?? null;
+        unset($data['featured_image']);
+
         $property = $this->repository->update($id, $data);
 
         if ($amenities !== null) {
             $property->amenities()->sync($amenities);
+        }
+
+        if ($featuredImage) {
+            $property->clearMediaCollection('featured_image');
+            $property->addMedia($featuredImage)->toMediaCollection('featured_image');
+        }
+
+        if ($images) {
+            foreach ($images as $image) {
+                $property->addMedia($image)->toMediaCollection('gallery');
+            }
         }
 
         $property->load('amenities');

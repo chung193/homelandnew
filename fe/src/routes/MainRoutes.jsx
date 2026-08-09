@@ -1,4 +1,4 @@
-import { BrowserRouter, useRoutes, Navigate } from 'react-router-dom';
+import { useRoutes, Navigate } from 'react-router-dom';
 import { AuthRoutes } from './AuthRoutes';
 import { DashboardRoutes } from './DashboardRoutes';
 import ProtectedRoute from './ProtectedRoute';
@@ -15,10 +15,8 @@ function RoutesElement() {
 
 export default function MainRoutes() {
     return (
-        <BrowserRouter>
-            <AuthProvider>
-                <RoutesElement />
-            </AuthProvider>
-        </BrowserRouter>
+        <AuthProvider>
+            <RoutesElement />
+        </AuthProvider>
     );
 }

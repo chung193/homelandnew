@@ -20,6 +20,7 @@ class PropertyStoreRequest extends FormRequest
             'slug' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'address' => ['nullable', 'string', 'max:255'],
+            'address_detail' => ['nullable', 'string', 'max:255'],
             'city' => ['nullable', 'string', 'max:255'],
             'district' => ['nullable', 'string', 'max:255'],
             'ward' => ['nullable', 'string', 'max:255'],
@@ -34,6 +35,9 @@ class PropertyStoreRequest extends FormRequest
             'is_active' => ['nullable', 'boolean'],
             'amenities' => ['nullable', 'array'],
             'amenities.*' => ['integer', 'exists:amenities,id'],
+            'images' => ['nullable', 'array'],
+            'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'featured_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ];
     }
 }

@@ -15,6 +15,18 @@ const style = {
     overflow: 'hidden',
     borderRadius: 1,
     minWidth: 340,
+    maxWidth: 'calc(100vw - 32px)',
+    maxHeight: '90vh',
+    width: { xs: 'calc(100vw - 32px)', sm: 680 },
+    display: 'flex',
+    flexDirection: 'column',
+}
+
+const contentStyle = {
+    flex: 1,
+    overflowY: 'auto',
+    pr: 1,
+    pb: 1,
 }
 
 const CustomModal = ({ open, handleClose, children, title }) => {
@@ -25,7 +37,7 @@ const CustomModal = ({ open, handleClose, children, title }) => {
                     direction="row"
                     alignItems="center"
                     justifyContent="space-between"
-                    sx={{ mb: 2 }}
+                    sx={{ mb: 2, flexShrink: 0 }}
                 >
                     <Typography variant="h6" fontWeight={600}>
                         {title}
@@ -41,7 +53,9 @@ const CustomModal = ({ open, handleClose, children, title }) => {
                     </IconButton>
                 </Stack>
 
-                {children}
+                <Box sx={contentStyle}>
+                    {children}
+                </Box>
             </Box>
         </Modal>
     )

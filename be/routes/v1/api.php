@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\V1\AmenityController;
 use App\Http\Controllers\Api\V1\StatisticsController;
 use App\Http\Controllers\Api\V1\SearchController;
 use App\Http\Controllers\Api\V1\UploadFileController;
+use App\Http\Controllers\Api\V1\LocationController;
 use Illuminate\Support\Facades\Route;
 
 // client
@@ -60,6 +61,12 @@ Route::get('/ping', function () {
     return 'V1 OK';
 });
 
+Route::prefix('locations')->group(function () {
+    Route::get('provinces', [LocationController::class, 'provinces']);
+    Route::get('districts', [LocationController::class, 'districts']);
+    Route::get('wards', [LocationController::class, 'wards']);
+});
+
 // Search routes (public)
 Route::get('/search', [SearchController::class, 'global'])->name('search.global');
 Route::get('/search/posts', [SearchController::class, 'posts'])->name('search.posts');
@@ -87,6 +94,11 @@ Route::name('auth.')
     });
 
 Route::post('/post-import-wordpress-xml', [PostController::class, 'importWordpressXml'])->name('post.import.wordpress_xml');
+
+Route::get('/property-types/all', [PropertyTypeController::class, 'all'])->name('property-types.all');
+Route::get('/property-types/active', [PropertyTypeController::class, 'active'])->name('property-types.active');
+Route::get('/amenities/all', [AmenityController::class, 'all'])->name('amenities.all');
+Route::get('/amenities/active', [AmenityController::class, 'active'])->name('amenities.active');
 
 Route::group(['middleware' => 'auth:api'], function () {
     // Statistics routes
@@ -133,13 +145,9 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::delete('/properties', [PropertyController::class, 'bulkDestroy'])->name('properties.bulk_destroy');
     Route::apiResource('properties', PropertyController::class)->names('properties');
 
-    Route::get('/property-types/all', [PropertyTypeController::class, 'all'])->name('property-types.all');
-    Route::get('/property-types/active', [PropertyTypeController::class, 'active'])->name('property-types.active');
     Route::delete('/property-types', [PropertyTypeController::class, 'bulkDestroy'])->name('property-types.bulk_destroy');
     Route::apiResource('property-types', PropertyTypeController::class)->names('property-types');
 
-    Route::get('/amenities/all', [AmenityController::class, 'all'])->name('amenities.all');
-    Route::get('/amenities/active', [AmenityController::class, 'active'])->name('amenities.active');
     Route::delete('/amenities', [AmenityController::class, 'bulkDestroy'])->name('amenities.bulk_destroy');
     Route::apiResource('amenities', AmenityController::class)->names('amenities');
 

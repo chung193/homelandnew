@@ -19,6 +19,8 @@ class PropertyTypeStoreRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'is_active' => ['nullable', 'boolean'],
             'sort_order' => ['nullable', 'integer'],
+            'amenity_ids' => ['nullable', 'array'],
+            'amenity_ids.*' => ['integer', 'exists:amenities,id'],
         ];
     }
 }

@@ -27,6 +27,7 @@ class Property extends Model implements HasMedia
         'title',
         'slug',
         'address',
+        'address_detail',
         'city',
         'district',
         'ward',

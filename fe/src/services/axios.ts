@@ -15,13 +15,25 @@ export const instance = axios.create({
 
 authInstance.interceptors.request.use(
     (config) => {
-        const user = JSON.parse(localStorage.getItem('user'))
+        try {
+            const rawUser = localStorage.getItem('user')
+            if (!rawUser) {
+                return config
+            }
 
-        const token = user.token
-        const token_type = user.token_type.trim()
-        if (token) {
-            config.headers.Authorization = `${token_type} ${token}`
+            const user = JSON.parse(rawUser)
+            const token = user?.token
+            const tokenType = typeof user?.token_type === 'string' ? user.token_type.trim() : ''
+
+            if (token && tokenType) {
+                config.headers.Authorization = `${tokenType} ${token}`
+            } else if (token) {
+                config.headers.Authorization = `Bearer ${token}`
+            }
+        } catch (error) {
+            console.warn('Unable to attach auth token', error)
         }
+
         return config
     },
     (error) => {

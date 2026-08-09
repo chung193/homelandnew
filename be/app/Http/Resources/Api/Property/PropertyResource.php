@@ -18,6 +18,7 @@ class PropertyResource extends JsonResource
             'slug' => $this->slug,
             'description' => $this->description,
             'address' => $this->address,
+            'address_detail' => $this->address_detail,
             'city' => $this->city,
             'district' => $this->district,
             'ward' => $this->ward,
@@ -40,6 +41,15 @@ class PropertyResource extends JsonResource
                     ];
                 });
             }),
+            'featured_image' => $this->getFirstMediaUrl('featured_image', 'preview') ?: null,
+            'images' => $this->getMedia('gallery')->map(function ($media) {
+                return [
+                    'id' => $media->id,
+                    'name' => $media->name,
+                    'url' => $media->getFullUrl(),
+                    'thumb' => $media->getUrl('preview'),
+                ];
+            })->values(),
             'property_type' => $this->whenLoaded('propertyType', function () {
                 return [
                     'id' => $this->propertyType->id,

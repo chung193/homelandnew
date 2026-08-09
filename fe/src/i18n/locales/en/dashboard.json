@@ -131,7 +131,98 @@
                 "close": "Close",
                 "save": "Save"
             }
+        },
+        "propertyType": {
+            "deleteConfirmTitle": "Confirm property type deletion",
+            "deleteConfirmMessage": "Are you sure you want to delete {{count}} property type(s)?",
+            "title": "Property Type Management",
+            "description": "Property Type Management",
+            "addPropertyType": "Add new property type",
+            "table": {
+                "stt": "No.",
+                "name": "Name",
+                "slug": "Slug",
+                "sortOrder": "Sort order",
+                "isActive": "Status"
+            },
+            "form": {
+                "name": "Name",
+                "slug": "Slug",
+                "description": "Description",
+                "sortOrder": "Sort order",
+                "amenities": "Amenities",
+                "amenitiesHelper": "Choose the amenities that belong to this property type.",
+                "isActive": "Visible",
+                "close": "Close",
+                "save": "Save"
+            }
+        },
+        "amenity": {
+            "deleteConfirmTitle": "Confirm amenity deletion",
+            "deleteConfirmMessage": "Are you sure you want to delete {{count}} amenity(ies)?",
+            "title": "Amenity Management",
+            "description": "Amenity Management",
+            "addAmenity": "Add new amenity",
+            "table": {
+                "stt": "No.",
+                "name": "Name",
+                "slug": "Slug",
+                "icon": "Icon",
+                "sortOrder": "Sort order",
+                "isActive": "Status"
+            },
+            "form": {
+                "name": "Name",
+                "slug": "Slug",
+                "icon": "Icon",
+                "iconHelper": "Use an icon name (for example: Wifi) or an image URL.",
+                "preview": "Preview",
+                "description": "Description",
+                "sortOrder": "Sort order",
+                "isActive": "Visible",
+                "close": "Close",
+                "save": "Save"
+            }
+        },
+        "property": {
+            "deleteConfirmTitle": "Confirm property deletion",
+            "deleteConfirmMessage": "Are you sure you want to delete {{count}} property(ies)?",
+            "title": "Property Management",
+            "description": "Property management",
+            "addProperty": "Add new property",
+            "table": {
+                "stt": "No.",
+                "title": "Title",
+                "propertyType": "Property Type",
+                "listingType": "Listing type",
+                "price": "Price",
+                "area": "Area",
+                "status": "Status",
+                "isActive": "Visible"
+            },
+            "form": {
+                "propertyType": "Property Type",
+                "listingType": "Listing type",
+                "title": "Title",
+                "slug": "Slug",
+                "description": "Description",
+                "address": "Address",
+                "addressDetail": "Detailed address",
+                "city": "City",
+                "district": "District",
+                "ward": "Ward",
+                "price": "Price",
+                "priceUnit": "Price unit",
+                "area": "Area",
+                "bedrooms": "Bedrooms",
+                "bathrooms": "Bathrooms",
+                "floor": "Floor",
+                "amenities": "Amenities",
+                "status": "Status",
+                "isActive": "Visible",
+                "close": "Close",
+                "save": "Save"
+            }
         }
     }
 }
-

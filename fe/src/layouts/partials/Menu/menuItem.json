@@ -98,6 +98,28 @@
                         "url": "/dashboard/permission-matrix"
                     }
                 ]
+            },
+            {
+                "id": "real-estate",
+                "label": "Real Estate",
+                "url": "javascript:;",
+                "children": [
+                    {
+                        "id": "property-type",
+                        "label": "Property Type",
+                        "url": "/dashboard/property-type"
+                    },
+                    {
+                        "id": "amenity",
+                        "label": "Amenity",
+                        "url": "/dashboard/amenity"
+                    },
+                    {
+                        "id": "property",
+                        "label": "Property",
+                        "url": "/dashboard/property"
+                    }
+                ]
             }
         ]
     }

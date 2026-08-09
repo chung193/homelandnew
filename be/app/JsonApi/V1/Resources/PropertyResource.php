@@ -16,6 +16,7 @@ class PropertyResource extends JsonApiResource
             'listing-type' => $resource->listing_type,
             'description' => $resource->description,
             'address' => $resource->address,
+            'address-detail' => $resource->address_detail,
             'city' => $resource->city,
             'district' => $resource->district,
             'ward' => $resource->ward,

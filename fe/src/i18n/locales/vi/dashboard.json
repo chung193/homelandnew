@@ -269,6 +269,98 @@
                 "close": "Đóng",
                 "save": "Lưu"
             }
+        },
+        "propertyType": {
+            "deleteConfirmTitle": "Xác nhận xóa loại bất động sản",
+            "deleteConfirmMessage": "Bạn có chắc chắn muốn xóa {{count}} loại bất động sản này không?",
+            "title": "Quản lý loại bất động sản",
+            "description": "Quản lý loại bất động sản",
+            "addPropertyType": "Thêm loại bất động sản mới",
+            "table": {
+                "stt": "STT",
+                "name": "Tên loại",
+                "slug": "Slug",
+                "sortOrder": "Thứ tự",
+                "isActive": "Trạng thái"
+            },
+            "form": {
+                "name": "Tên loại",
+                "slug": "Slug",
+                "description": "Mô tả",
+                "sortOrder": "Thứ tự",
+                "amenities": "Tiện ích",
+                "amenitiesHelper": "Chọn các tiện ích thuộc loại bất động sản này.",
+                "isActive": "Hiển thị",
+                "close": "Đóng",
+                "save": "Lưu"
+            }
+        },
+        "amenity": {
+            "deleteConfirmTitle": "Xác nhận xóa tiện ích",
+            "deleteConfirmMessage": "Bạn có chắc chắn muốn xóa {{count}} tiện ích này không?",
+            "title": "Quản lý tiện ích",
+            "description": "Quản lý tiện ích",
+            "addAmenity": "Thêm tiện ích mới",
+            "table": {
+                "stt": "STT",
+                "name": "Tên tiện ích",
+                "slug": "Slug",
+                "icon": "Icon",
+                "sortOrder": "Thứ tự",
+                "isActive": "Trạng thái"
+            },
+            "form": {
+                "name": "Tên tiện ích",
+                "slug": "Slug",
+                "icon": "Icon",
+                "iconHelper": "Nhập tên icon (ví dụ: Wifi) hoặc URL hình ảnh.",
+                "preview": "Xem trước",
+                "description": "Mô tả",
+                "sortOrder": "Thứ tự",
+                "isActive": "Hiển thị",
+                "close": "Đóng",
+                "save": "Lưu"
+            }
+        },
+        "property": {
+            "deleteConfirmTitle": "Xác nhận xóa tài sản",
+            "deleteConfirmMessage": "Bạn có chắc chắn muốn xóa {{count}} tài sản này không?",
+            "title": "Quản lý tài sản",
+            "description": "Quản lý tài sản bất động sản",
+            "addProperty": "Thêm tài sản mới",
+            "table": {
+                "stt": "STT",
+                "title": "Tên tài sản",
+                "propertyType": "Loại bất động sản",
+                "listingType": "Hình thức",
+                "price": "Giá",
+                "area": "Diện tích",
+                "status": "Trạng thái",
+                "isActive": "Hiển thị"
+            },
+            "form": {
+                "propertyType": "Loại bất động sản",
+                "listingType": "Hình thức",
+                "title": "Tên tài sản",
+                "slug": "Slug",
+                "description": "Mô tả",
+                "address": "Địa chỉ",
+                "addressDetail": "Địa chỉ chi tiết",
+                "city": "Thành phố",
+                "district": "Quận/Huyện",
+                "ward": "Phường/Xã",
+                "price": "Giá",
+                "priceUnit": "Đơn vị giá",
+                "area": "Diện tích",
+                "bedrooms": "Phòng ngủ",
+                "bathrooms": "Phòng tắm",
+                "floor": "Số tầng",
+                "amenities": "Tiện ích",
+                "status": "Trạng thái",
+                "isActive": "Hiển thị",
+                "close": "Đóng",
+                "save": "Lưu"
+            }
         }
     }
 }
