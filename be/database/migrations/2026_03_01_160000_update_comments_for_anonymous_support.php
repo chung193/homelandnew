@@ -19,16 +19,20 @@ return new class extends Migration
             }
         });
 
-        DB::statement('ALTER TABLE comments DROP FOREIGN KEY comments_user_id_foreign');
-        DB::statement('ALTER TABLE comments MODIFY user_id BIGINT UNSIGNED NULL');
-        DB::statement('ALTER TABLE comments ADD CONSTRAINT comments_user_id_foreign FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL');
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement('ALTER TABLE comments DROP FOREIGN KEY comments_user_id_foreign');
+            DB::statement('ALTER TABLE comments MODIFY user_id BIGINT UNSIGNED NULL');
+            DB::statement('ALTER TABLE comments ADD CONSTRAINT comments_user_id_foreign FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL');
+        }
     }
 
     public function down(): void
     {
-        DB::statement('ALTER TABLE comments DROP FOREIGN KEY comments_user_id_foreign');
-        DB::statement('ALTER TABLE comments MODIFY user_id BIGINT UNSIGNED NOT NULL');
-        DB::statement('ALTER TABLE comments ADD CONSTRAINT comments_user_id_foreign FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE');
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement('ALTER TABLE comments DROP FOREIGN KEY comments_user_id_foreign');
+            DB::statement('ALTER TABLE comments MODIFY user_id BIGINT UNSIGNED NOT NULL');
+            DB::statement('ALTER TABLE comments ADD CONSTRAINT comments_user_id_foreign FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE');
+        }
 
         Schema::table('comments', function (Blueprint $table) {
             if (Schema::hasColumn('comments', 'guest_email')) {
