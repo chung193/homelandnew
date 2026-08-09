@@ -1,0 +1,274 @@
+﻿{
+    "home": "Trang chủ",
+    "pages": {
+        "role": {
+            "deleteConfirmTitle": "Xác nhận xóa vai trò",
+            "deleteConfirmMessage": "Bạn có chắc chắn muốn xóa {{count}} vai trò này không?",
+            "title": "Quản lý vai trò",
+            "description": "Quản lý vai trò",
+            "addRole": "Thêm vai trò mới",
+            "nameField": "Tên vai trò",
+            "descriptionField": "Mô tả vai trò",
+            "guardNameField": "Tên bảo vệ",
+            "table": {
+                "id": "ID",
+                "stt": "STT",
+                "name": "Tên vai trò",
+                "description": "Mô tả",
+                "guardName": "Tên bảo vệ",
+                "createdAt": "Ngày tạo",
+                "updatedAt": "Ngày cập nhật"
+            },
+            "form": {
+                "name": "Tên vai trò",
+                "guardName": "Tên bảo vệ",
+                "description": "Mô tả",
+                "close": "Đóng",
+                "save": "Lưu"
+            }
+        },
+        "permission": {
+            "deleteConfirmTitle": "Xác nhận xóa quyền",
+            "deleteConfirmMessage": "Bạn có chắc chắn muốn xóa {{count}} quyền này không?",
+            "title": "Quản lý quyền",
+            "description": "Quản lý quyền",
+            "addPermission": "Thêm quyền mới",
+            "nameField": "Tên quyền",
+            "descriptionField": "Mô tả quyền",
+            "guardNameField": "Tên bảo vệ",
+            "table": {
+                "id": "ID",
+                "stt": "STT",
+                "name": "Tên quyền",
+                "description": "Mô tả",
+                "guardName": "Tên bảo vệ",
+                "createdAt": "Ngày tạo",
+                "updatedAt": "Ngày cập nhật"
+            },
+            "form": {
+                "name": "Tên quyền",
+                "guardName": "Tên bảo vệ",
+                "description": "Mô tả",
+                "close": "Đóng",
+                "save": "Lưu"
+            }
+        },
+        "user": {
+            "deleteConfirmTitle": "Xác nhận xóa người dùng",
+            "deleteConfirmMessage": "Bạn có chắc chắn muốn xóa {{count}} người dùng này không?",
+            "title": "Quản lý người dùng",
+            "description": "Quản lý người dùng",
+            "addUser": "Thêm người dùng mới",
+            "nameField": "Tên người dùng",
+            "descriptionField": "Mô tả người dùng",
+            "guardNameField": "Tên bảo vệ",
+            "table": {
+                "id": "ID",
+                "stt": "STT",
+                "name": "Tên người dùng",
+                "description": "Mô tả",
+                "guardName": "Tên bảo vệ",
+                "createdAt": "Ngày tạo",
+                "updatedAt": "Ngày cập nhật",
+                "email": "Email",
+                "role": "Quyền",
+                "status": "Trạng thái"
+            },
+            "form": {
+                "name": "Tên người dùng",
+                "guardName": "Tên bảo vệ",
+                "description": "Mô tả",
+                "close": "Đóng",
+                "save": "Lưu",
+                "email": "Email",
+                "password": "Mật khẩu",
+                "passwordConfirmation": "Xác nhận mật khẩu"
+            }
+        },
+        "category": {
+            "deleteConfirmTitle": "Xác nhận xóa danh mục",
+            "deleteConfirmMessage": "Bạn có chắc chắn muốn xóa {{count}} danh mục này không?",
+            "title": "Quản lý danh mục",
+            "description": "Quản lý danh mục",
+            "addCategory": "Thêm danh mục mới",
+            "nameField": "Tên danh mục",
+            "descriptionField": "Mô tả danh mục",
+            "guardNameField": "Tên bảo vệ",
+            "table": {
+                "id": "ID",
+                "stt": "STT",
+                "name": "Tên danh mục",
+                "description": "Mô tả",
+                "createdAt": "Ngày tạo",
+                "updatedAt": "Ngày cập nhật",
+                "order": "Thứ tự hiển thị",
+                "is_active": "Trạng thái hoạt động",
+                "parent": "Danh mục cha"
+            },
+            "form": {
+                "name": "Tên danh mục",
+                "guardName": "Tên bảo vệ",
+                "description": "Mô tả",
+                "close": "Đóng",
+                "save": "Lưu",
+                "parent_id": "Danh mục cha",
+                "slug": "Slug",
+                "order": "Thứ tự hiển thị",
+                "is_active": "Hoạt động"
+            }
+        },
+        "tag": {
+            "deleteConfirmTitle": "Xác nhận xóa tag",
+            "deleteConfirmMessage": "Bạn có chắc chắn muốn xóa {{count}} tag này không?",
+            "title": "Quản lý tag",
+            "description": "Quản lý tag bài viết",
+            "addTag": "Thêm tag mới",
+            "table": {
+                "id": "ID",
+                "stt": "STT",
+                "name": "Tên tag",
+                "slug": "Slug",
+                "createdAt": "Ngày tạo",
+                "updatedAt": "Ngày cập nhật"
+            },
+            "form": {
+                "name": "Tên tag",
+                "slug": "Slug",
+                "close": "Đóng",
+                "save": "Lưu"
+            }
+        },
+        "page": {
+            "deleteConfirmTitle": "Xác nhận xóa trang",
+            "deleteConfirmMessage": "Bạn có chắc chắn muốn xóa {{count}} trang này không?",
+            "title": "Quản lý trang",
+            "description": "Quản lý trang",
+            "nameField": "Tên trang",
+            "descriptionField": "Mô tả trang",
+            "guardNameField": "Tên bảo vệ",
+            "addPage": "Thêm trang mới",
+            "table": {
+                "id": "ID",
+                "stt": "STT",
+                "name": "Tên trang",
+                "description": "Mô tả",
+                "guardName": "Tên bảo vệ",
+                "createdAt": "Ngày tạo",
+                "updatedAt": "Ngày cập nhật",
+                "type": "Loại",
+                "status": "Trạng thái",
+                "slug": "Slug",
+                "user": "Người tạo"
+            },
+            "form": {
+                "name": "Tên trang",
+                "guardName": "Tên bảo vệ",
+                "description": "Mô tả",
+                "close": "Đóng",
+                "save": "Lưu",
+                "allow_comments": "Cho phép bình luận",
+                "featured": "Nổi bật",
+                "published_at": "Ngày đăng",
+                "views": "Lượt xem",
+                "type": "Loại bài đăng",
+                "status": "Trạng thái",
+                "content": "Nội dung",
+                "slug": "Slug"
+            }
+        },
+        "post": {
+            "deleteConfirmTitle": "Xác nhận xóa bài viết",
+            "deleteConfirmMessage": "Bạn có chắc chắn muốn xóa {{count}} bài viết này không?",
+            "title": "Quản lý bài viết",
+            "description": "Quản lý bài viết",
+            "nameField": "Tên bài viết",
+            "descriptionField": "Mô tả bài viết",
+            "guardNameField": "Tên bảo vệ",
+            "addPost": "Thêm bài viết mới",
+            "table": {
+                "id": "ID",
+                "stt": "STT",
+                "name": "Tên bài viết",
+                "description": "Mô tả",
+                "guardName": "Tên bảo vệ",
+                "createdAt": "Ngày tạo",
+                "updatedAt": "Ngày cập nhật",
+                "type": "Loại",
+                "status": "Trạng thái",
+                "slug": "Slug",
+                "user": "Người tạo",
+                "category": "Danh mục",
+                "tags": "Tag"
+            },
+            "form": {
+                "name": "Tên bài viết",
+                "guardName": "Tên bảo vệ",
+                "description": "Mô tả",
+                "close": "Đóng",
+                "save": "Lưu",
+                "allow_comments": "Cho phép bình luận",
+                "featured": "Nổi bật",
+                "published_at": "Ngày đăng",
+                "views": "Lượt xem",
+                "type": "Loại bài đăng",
+                "status": "Trạng thái",
+                "content": "Nội dung",
+                "slug": "Slug",
+                "category": "Danh mục",
+                "tags": "Tag"
+            }
+        },
+        "comment": {
+            "deleteConfirmTitle": "Xác nhận xóa comment",
+            "deleteConfirmMessage": "Bạn có chắc chắn muốn xóa {{count}} comment này không?",
+            "deleteSingleConfirmMessage": "Bạn có chắc chắn muốn xóa comment này không?",
+            "title": "Quản lý comment",
+            "description": "Duyệt và quản lý comment cho bài viết của bạn",
+            "helper": "Chỉ hiển thị comment thuộc các bài viết của tài khoản đang đăng nhập.",
+            "table": {
+                "stt": "STT",
+                "author": "Tác giả",
+                "post": "Bài viết",
+                "body": "Nội dung",
+                "status": "Trạng thái",
+                "createdAt": "Ngày tạo",
+                "actions": "Thao tác"
+            },
+            "status": {
+                "all": "Tất cả",
+                "pending": "Chờ duyệt",
+                "approved": "Đã duyệt"
+            },
+            "actions": {
+                "approve": "Duyệt",
+                "delete": "Xóa"
+            }
+        },
+        "media": {
+            "deleteConfirmTitle": "Xác nhận xóa ảnh",
+            "deleteConfirmMessage": "Bạn có chắc chắn muốn xóa {{count}} ảnh này không?",
+            "title": "Quản lý ảnh",
+            "description": "Quản lý ảnh",
+            "addmedia": "Thêm ảnh mới",
+            "nameField": "Tên ảnh",
+            "descriptionField": "Mô tả ảnh",
+            "guardNameField": "Tên bảo vệ",
+            "table": {
+                "id": "ID",
+                "stt": "STT",
+                "name": "Tên ảnh",
+                "description": "Mô tả",
+                "guardName": "Tên bảo vệ",
+                "createdAt": "Ngày tạo",
+                "updatedAt": "Ngày cập nhật"
+            },
+            "form": {
+                "name": "Tên ảnh",
+                "guardName": "Tên bảo vệ",
+                "description": "Mô tả",
+                "close": "Đóng",
+                "save": "Lưu"
+            }
+        }
+    }
+}

@@ -1,0 +1,20 @@
+<?php
+
+namespace App\Services\Contracts;
+
+use Illuminate\Contracts\Auth\Authenticatable;
+
+interface AuthServiceInterface
+{
+    public function register(array $data): array;
+    public function forgot(string $email): string;
+    public function resetPassword(array $data): string;
+
+    public function login(array $credentials): array;
+
+    public function me(): Authenticatable;
+
+    public function refresh(): string;
+
+    public function logout(): bool;
+}

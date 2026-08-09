@@ -1,0 +1,174 @@
+/* Auth Pages Styling */
+
+.auth-page {
+    min-height: 100vh;
+}
+
+/* Input focus effects */
+.MuiTextField-root .MuiOutlinedInput-root {
+    transition: all 0.3s ease;
+}
+
+.MuiTextField-root .MuiOutlinedInput-root.Mui-focused {
+    transform: translateY(-2px);
+}
+
+/* Button hover effects */
+.MuiButton-root {
+    transition: all 0.3s ease;
+}
+
+.MuiButton-containedPrimary:hover {
+    transform: translateY(-1px);
+}
+
+/* Form field styling */
+.MuiTextField-root .MuiOutlinedInput-input {
+    transition: all 0.2s ease;
+}
+
+.MuiTextField-root .MuiOutlinedInput-input:focus {
+    outline: none;
+}
+
+/* Link styling */
+a {
+    color: inherit;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+a:hover {
+    color: currentColor;
+}
+
+/* Smooth transitions for theme changes */
+:root {
+    color-scheme: light dark;
+}
+
+/* Auth container animations */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.auth-form {
+    animation: slideUp 0.5s ease-out;
+}
+
+/* Social button styling */
+.social-button {
+    transition: all 0.3s ease;
+    border-radius: 8px;
+}
+
+.social-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Divider styling */
+.MuiDivider-root {
+    position: relative;
+    margin: 12px 0;
+}
+
+.MuiDivider-root:before,
+.MuiDivider-root:after {
+    background: linear-gradient(to right, transparent, currentColor, transparent);
+}
+
+/* Password strength indicator (if needed) */
+.password-strength {
+    height: 4px;
+    border-radius: 2px;
+    margin-top: 8px;
+    background-color: #e0e0e0;
+    overflow: hidden;
+}
+
+.password-strength-bar {
+    height: 100%;
+    width: 0;
+    transition: width 0.3s ease, background-color 0.3s ease;
+    border-radius: 2px;
+}
+
+.password-strength.weak .password-strength-bar {
+    width: 33%;
+    background-color: #f44336;
+}
+
+.password-strength.medium .password-strength-bar {
+    width: 66%;
+    background-color: #ff9800;
+}
+
+.password-strength.strong .password-strength-bar {
+    width: 100%;
+    background-color: #4caf50;
+}
+
+/* Error message styling */
+.MuiFormHelperText-root.Mui-error {
+    transition: all 0.2s ease;
+    margin-top: 4px;
+}
+
+/* Success state */
+.form-success {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #4caf50;
+}
+
+.form-success svg {
+    animation: scaleIn 0.3s ease-out;
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Loading state */
+.form-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .auth-page {
+        background-color: var(--color-bg-secondary);
+    }
+
+    .social-button {
+        min-height: 44px;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .auth-page {
+        background-color: #0f0f0f;
+    }
+}

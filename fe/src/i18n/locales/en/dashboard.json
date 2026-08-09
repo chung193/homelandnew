@@ -1,0 +1,137 @@
+{
+    "home": "Home",
+    "pages": {
+        "role": {
+            "deleteConfirmTitle": "Confirm role deletion",
+            "deleteConfirmMessage": "Are you sure you want to delete {{count}} role(s)?",
+            "title": "Role Management",
+            "description": "Role Management",
+            "addRole": "Add new role",
+            "nameField": "Role name",
+            "descriptionField": "Role description",
+            "guardNameField": "Guard name",
+            "table": {
+                "id": "ID",
+                "stt": "No.",
+                "name": "Role name",
+                "description": "Description",
+                "guardName": "Guard name",
+                "createdAt": "Created at",
+                "updatedAt": "Updated at"
+            },
+            "form": {
+                "name": "Role name",
+                "guardName": "Guard name",
+                "description": "Description",
+                "close": "Close",
+                "save": "Save"
+            }
+        },
+        "permission": {
+            "deleteConfirmTitle": "Confirm permission deletion",
+            "deleteConfirmMessage": "Are you sure you want to delete {{count}} permission(s)?",
+            "title": "Permission Management",
+            "description": "Permission Management",
+            "addPermission": "Add new permission",
+            "nameField": "Permission name",
+            "descriptionField": "Permission description",
+            "guardNameField": "Guard name",
+            "table": {
+                "id": "ID",
+                "stt": "No.",
+                "name": "Permission name",
+                "description": "Description",
+                "guardName": "Guard name",
+                "createdAt": "Created at",
+                "updatedAt": "Updated at"
+            },
+            "form": {
+                "name": "Permission name",
+                "guardName": "Guard name",
+                "description": "Description",
+                "close": "Close",
+                "save": "Save"
+            }
+        },
+        "user": {
+            "deleteConfirmTitle": "Confirm user deletion",
+            "deleteConfirmMessage": "Are you sure you want to delete {{count}} user(s)?",
+            "title": "User Management",
+            "description": "User Management",
+            "addUser": "Add new user",
+            "nameField": "User name",
+            "descriptionField": "User description",
+            "guardNameField": "Guard name",
+            "table": {
+                "id": "ID",
+                "stt": "No.",
+                "name": "User name",
+                "description": "Description",
+                "guardName": "Guard name",
+                "createdAt": "Created at",
+                "updatedAt": "Updated at",
+                "email": "Email",
+                "role": "Role",
+                "status": "Status"
+            },
+            "form": {
+                "name": "User name",
+                "guardName": "Guard name",
+                "description": "Description",
+                "close": "Close",
+                "save": "Save",
+                "email": "Email",
+                "password": "Password",
+                "passwordConfirmation": "Confirm password"
+            }
+        },
+        "comment": {
+            "deleteConfirmTitle": "Confirm comment deletion",
+            "deleteConfirmMessage": "Are you sure you want to delete {{count}} comment(s)?",
+            "deleteSingleConfirmMessage": "Are you sure you want to delete this comment?",
+            "title": "Comment Moderation",
+            "description": "Review and manage comments on your posts",
+            "helper": "Only comments that belong to posts owned by the signed in user are shown here.",
+            "table": {
+                "stt": "No.",
+                "author": "Author",
+                "post": "Post",
+                "body": "Content",
+                "status": "Status",
+                "createdAt": "Created at",
+                "actions": "Actions"
+            },
+            "status": {
+                "all": "All",
+                "pending": "Pending",
+                "approved": "Approved"
+            },
+            "actions": {
+                "approve": "Approve",
+                "delete": "Delete"
+            }
+        },
+        "tag": {
+            "deleteConfirmTitle": "Confirm tag deletion",
+            "deleteConfirmMessage": "Are you sure you want to delete {{count}} tag(s)?",
+            "title": "Tag Management",
+            "description": "Tag Management",
+            "addTag": "Add new tag",
+            "table": {
+                "id": "ID",
+                "stt": "No.",
+                "name": "Tag name",
+                "slug": "Slug",
+                "createdAt": "Created at",
+                "updatedAt": "Updated at"
+            },
+            "form": {
+                "name": "Tag name",
+                "slug": "Slug",
+                "close": "Close",
+                "save": "Save"
+            }
+        }
+    }
+}
+

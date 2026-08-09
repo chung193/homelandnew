@@ -1,0 +1,9 @@
+{
+    "hello": "Hello, {{name}}!",
+    "confirm": "Confirm",
+    "search": "Search",
+    "export": "Export",
+    "import": "Import",
+    "reload": "Reload data",
+    "loadingProcessing": "Processing..."
+}

@@ -1,0 +1,104 @@
+[
+    {
+        "id": "menu",
+        "label": "Menu",
+        "i18nKey": "menu.sent",
+        "url": "/dashboard/",
+        "exact": false,
+        "external": false,
+        "target": null,
+        "disabled": false,
+        "roles": [
+            "admin",
+            "staff"
+        ],
+        "badge": {
+            "content": 3,
+            "type": "standard"
+        },
+        "dividerBefore": false,
+        "initiallyOpen": false,
+        "children": []
+    },
+    {
+        "id": "dashboard",
+        "label": "Dashboard",
+        "icon": "barChart",
+        "url": "/dashboard",
+        "initiallyOpen": false,
+        "external": false
+    },
+    {
+        "id": "app",
+        "label": "App",
+        "icon": "apps",
+        "url": null,
+        "initiallyOpen": false,
+        "children": [
+            {
+                "id": "user",
+                "label": "User",
+                "url": "/dashboard/user"
+            },
+            {
+                "id": "content",
+                "label": "content",
+                "url": "javascript:;",
+                "children": [
+                    {
+                        "id": "page",
+                        "label": "Page",
+                        "url": "/dashboard/page"
+                    },
+                    {
+                        "id": "category",
+                        "label": "Category",
+                        "url": "/dashboard/category"
+                    },
+                    {
+                        "id": "tag",
+                        "label": "Tag",
+                        "url": "/dashboard/tag"
+                    },
+                    {
+                        "id": "post",
+                        "label": "Post",
+                        "url": "/dashboard/post"
+                    },
+                    {
+                        "id": "comment",
+                        "label": "Comment",
+                        "url": "/dashboard/comment"
+                    },
+                    {
+                        "id": "media",
+                        "label": "Media",
+                        "url": "/dashboard/media"
+                    }
+                ]
+            },
+            {
+                "id": "role-permission",
+                "label": "Role",
+                "url": "/dashboard/role",
+                "children": [
+                    {
+                        "id": "role",
+                        "label": "Role",
+                        "url": "/dashboard/role"
+                    },
+                    {
+                        "id": "permission",
+                        "label": "Permission",
+                        "url": "/dashboard/permission"
+                    },
+                    {
+                        "id": "permission-matrix",
+                        "label": "Permission Matrix",
+                        "url": "/dashboard/permission-matrix"
+                    }
+                ]
+            }
+        ]
+    }
+]

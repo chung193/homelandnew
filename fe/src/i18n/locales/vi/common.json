@@ -1,0 +1,14 @@
+﻿{
+    "hello": "Chào, {{name}}!",
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "add": "Thêm",
+    "edit": "Chỉnh sửa",
+    "delete": "Xóa",
+    "confirm": "Xác nhận",
+    "search": "Tìm kiếm",
+    "export": "Xuất",
+    "import": "Nhập",
+    "reload": "Tải lại dữ liệu",
+    "loadingProcessing": "Đang xử lý..."
+}

@@ -1,0 +1,20 @@
+import * as React from 'react';
+import { RadarChart } from '@mui/x-charts/RadarChart';
+import { Typography } from '@mui/material';
+
+export default function SimpleRadar() {
+    return (
+        <>
+            <Typography>Simple Radar Chart</Typography>
+            <RadarChart
+                height={300}
+                series={[{ label: 'Lisa', data: [120, 98, 86, 99, 85, 65] }]}
+                radar={{
+                    max: 120,
+                    metrics: ['Math', 'Chinese', 'English', 'Geography', 'Physics', 'History'],
+                }}
+            />
+        </>
+
+    );
+}
