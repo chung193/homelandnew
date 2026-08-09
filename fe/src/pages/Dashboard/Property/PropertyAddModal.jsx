@@ -255,17 +255,17 @@ const PropertyAddModal = ({ onSubmit, onClose, showFullCreateButton = true }) =>
                             <Box sx={{ border: '1px solid', borderColor: errors.description ? 'error.main' : 'divider', borderRadius: 1, overflow: 'hidden', bgcolor: 'background.paper' }}>
                                 <Box sx={{ '& .ck-editor__main': { minHeight: 280 }, '& .ck-content': { minHeight: 280, maxHeight: 420, overflowY: 'auto' } }}>
                                     <CKEditor
-                                    editor={ClassicEditor}
-                                    data={field.value || ''}
-                                    onChange={(_, editor) => field.onChange(editor.getData())}
-                                    onBlur={() => field.onBlur()}
-                                    config={{
-                                        licenseKey: 'GPL',
-                                        plugins: [Essentials, Bold, Italic, Underline, Link, Paragraph, List, ListProperties, Undo],
-                                        toolbar: ['undo', 'redo', '|', 'bold', 'italic', 'underline', '|', 'link', '|', 'bulletedList', 'numberedList'],
-                                        initialData: field.value || '',
-                                        placeholder: 'Nhập mô tả bất động sản...'
-                                    }}
+                                        editor={ClassicEditor}
+                                        data={field.value || ''}
+                                        onChange={(_, editor) => field.onChange(editor.getData())}
+                                        onBlur={() => field.onBlur()}
+                                        config={{
+                                            licenseKey: 'GPL',
+                                            plugins: [Essentials, Bold, Italic, Underline, Link, Paragraph, List, ListProperties, Undo],
+                                            toolbar: ['undo', 'redo', '|', 'bold', 'italic', 'underline', '|', 'link', '|', 'bulletedList', 'numberedList'],
+                                            initialData: field.value || '',
+                                            placeholder: 'Nhập mô tả bất động sản...'
+                                        }}
                                     />
                                 </Box>
                             </Box>
