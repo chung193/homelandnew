@@ -44,6 +44,8 @@ const UserInfo = ({ id }) => {
         return user.roles.map((role) => role.name).filter(Boolean)
     }, [user.roles])
 
+    const registrationSourceLabel = user.registration_source === 'self_registered' ? 'Tự đăng ký' : 'Nội bộ tạo';
+
     const handleSaveRoles = () => {
         setSavingRoles(true)
 
@@ -84,6 +86,12 @@ const UserInfo = ({ id }) => {
             </Typography>
 
             <Stack spacing={1.5} sx={{ mb: 3 }}>
+                <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+                    <Chip label={user.is_active ? 'Đang hoạt động' : 'Đang khóa'} color={user.is_active ? 'success' : 'default'} size="small" />
+                    <Chip label={user.is_verified ? 'Đã xác thực email' : 'Chưa xác thực email'} color={user.is_verified ? 'success' : 'warning'} size="small" variant={user.is_verified ? 'filled' : 'outlined'} />
+                    <Chip label={registrationSourceLabel} color={user.registration_source === 'self_registered' ? 'info' : 'default'} size="small" variant="outlined" />
+                </Stack>
+
                 <FormControl fullWidth size="small">
                     <InputLabel id="user-role-select-label">Roles</InputLabel>
                     <Select
@@ -132,6 +140,13 @@ const UserInfo = ({ id }) => {
                 <Stack direction="row" spacing="2">
                     <Typography sx={{ width: 120 }}><strong>Email</strong></Typography>
                     <Typography>{user.email}</Typography>
+                </Stack>
+            </Stack>
+
+            <Stack direction="column" spacing="2" sx={{ mb: 2 }}>
+                <Stack direction="row" spacing="2">
+                    <Typography sx={{ width: 120 }}><strong>Verified at</strong></Typography>
+                    <Typography>{user.email_verified_at || 'Chưa xác thực'}</Typography>
                 </Stack>
             </Stack>
 

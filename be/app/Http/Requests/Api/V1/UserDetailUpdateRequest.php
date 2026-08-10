@@ -31,15 +31,16 @@ class UserDetailUpdateRequest extends FormRequest
                 Rule::unique('users', 'email')
                     ->ignore($this->route('user')),
             ],
-            'address' => ['string'],
-            'city' => ['string'],
-            'phone' => ['string'],
-            'description' => ['string'],
-            'position' => ['string'],
-            'website' => ['string'],
-            'github' => ['string'],
-            'join_date' => ['date'],
-            'birthday' => ['date'],
+            'is_active' => ['nullable', 'boolean'],
+            'address' => ['nullable', 'string'],
+            'city' => ['nullable', 'string'],
+            'phone' => ['nullable', 'string'],
+            'description' => ['nullable', 'string'],
+            'position' => ['nullable', 'string'],
+            'website' => ['nullable', 'string'],
+            'github' => ['nullable', 'string'],
+            'join_date' => ['nullable', 'date'],
+            'birthday' => ['nullable', 'date'],
         ];
     }
 }

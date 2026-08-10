@@ -14,6 +14,54 @@ import { loadListViewOptions, saveListViewOptions } from '@utils/listViewOptions
 
 const STORAGE_KEY = 'list-view-options:user';
 
+const getFilterTitle = (source, t) => {
+    if (source === 'self_registered') {
+        return 'Khách tự đăng ký';
+    }
+
+    if (source === 'admin_created') {
+        return 'Tài khoản nội bộ';
+    }
+
+    return t('pages.user.title');
+};
+
+const getPresetTitle = (preset) => {
+    if (preset === 'unverified') {
+        return 'Chưa xác thực email';
+    }
+
+    if (preset === 'inactive') {
+        return 'Đang bị khóa';
+    }
+
+    return null;
+};
+
+const getFilterDescription = (source, t) => {
+    if (source === 'self_registered') {
+        return 'Danh sách tài khoản do người dùng tự đăng ký';
+    }
+
+    if (source === 'admin_created') {
+        return 'Danh sách tài khoản được tạo nội bộ bởi quản trị viên';
+    }
+
+    return t('pages.user.description');
+};
+
+const getPresetDescription = (preset) => {
+    if (preset === 'unverified') {
+        return 'Danh sách tài khoản chưa xác thực email';
+    }
+
+    if (preset === 'inactive') {
+        return 'Danh sách tài khoản đang bị khóa';
+    }
+
+    return null;
+};
+
 const UserTable = () => {
     const { showLoading, hideLoading, showNotification, openModal, closeModal, showConfirm, closeConfirm } = useGlobalContext();
     const { t } = useTranslation('dashboard');
@@ -43,18 +91,22 @@ const UserTable = () => {
     const [viewMode, setViewMode] = useState(savedViewOptions.viewMode);
     const [searchParams] = useSearchParams();
     const id = searchParams.get("id");
+    const source = searchParams.get("source");
+    const preset = searchParams.get("preset");
     const [rowCount, setRowCount] = useState(0);
     const [paginationModel, setPaginationModel] = useState({
         page: 0,       // DataGrid bắt đầu từ 0
         pageSize: savedViewOptions.pageSize,
     });
-    const breadcrumbs = getBreadcrumbs(t);
+    const breadcrumbs = getBreadcrumbs(t, source, preset);
+    const pageTitle = getPresetTitle(preset) || getFilterTitle(source, t);
+    const pageDescription = getPresetDescription(preset) || getFilterDescription(source, t);
 
     const [keyword, setKeyword] = useState('');
 
     useEffect(() => {
         loadData();
-    }, [paginationModel, keyword]);
+    }, [paginationModel, keyword, source, preset]);
 
     useEffect(() => {
         saveListViewOptions(STORAGE_KEY, {
@@ -73,6 +125,9 @@ const UserTable = () => {
                 page: paginationModel.page + 1,
                 per_page: paginationModel.pageSize,
                 keyword,
+                ...(source ? { 'filter[registration_source]': source } : {}),
+                ...(preset === 'unverified' ? { 'filter[is_verified]': false } : {}),
+                ...(preset === 'inactive' ? { 'filter[is_active]': false } : {}),
             });
 
             setRows(res.data.data);
@@ -145,7 +200,12 @@ const UserTable = () => {
     const handleExportExcel = async () => {
         try {
             showLoading('Đang xuất file...');
-            const response = await userExport({ keyword });
+            const response = await userExport({
+                keyword,
+                ...(source ? { 'filter[registration_source]': source } : {}),
+                ...(preset === 'unverified' ? { 'filter[is_verified]': false } : {}),
+                ...(preset === 'inactive' ? { 'filter[is_active]': false } : {}),
+            });
 
             const blob = new Blob([response.data], {
                 type: response.headers['content-type'],
@@ -162,8 +222,8 @@ const UserTable = () => {
 
     return (
         <MainCard
-            pageTitle={t('pages.user.title')}
-            pageDescription={t('pages.user.description')}
+            pageTitle={pageTitle}
+            pageDescription={pageDescription}
             breadcrumbs={breadcrumbs}
         >
             {!id && <>

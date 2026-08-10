@@ -38,6 +38,7 @@ class AuthService extends BaseService implements AuthServiceInterface
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
+            'registration_source' => 'self_registered',
         ]);
         $user->assignRole('client');
         $user->sendEmailVerificationNotification();
@@ -59,6 +60,11 @@ class AuthService extends BaseService implements AuthServiceInterface
 
         /** @var User $user */
         $user = Auth::user();
+
+        if (! $user->hasVerifiedEmail()) {
+            auth()->logout();
+            throw new AuthenticationException('Please verify your email before logging in');
+        }
 
         if (! $user->is_active) {
             auth()->logout();

@@ -83,7 +83,10 @@ class UserService extends BaseService implements UserServiceInterface
      */
     public function createUser(array $data): Model
     {
-        $user =  $this->repository->create($data);
+        $user =  $this->repository->create([
+            ...$data,
+            'registration_source' => 'admin_created',
+        ]);
         $user->assignRole($data['role'] ?? 'client');
         $user->detail()->create([
             'phone' => $data['phone'] ?? '',

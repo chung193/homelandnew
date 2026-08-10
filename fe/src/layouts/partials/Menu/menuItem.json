@@ -29,17 +29,47 @@
         "external": false
     },
     {
+        "id": "account-management",
+        "label": "Quản lý tài khoản",
+        "icon": "security",
+        "url": "javascript:;",
+        "initiallyOpen": false,
+        "external": false,
+        "children": [
+            {
+                "id": "all-accounts",
+                "label": "Tất cả tài khoản",
+                "url": "/dashboard/user"
+            },
+            {
+                "id": "self-registered-accounts",
+                "label": "Khách tự đăng ký",
+                "url": "/dashboard/user?source=self_registered"
+            },
+            {
+                "id": "internal-accounts",
+                "label": "Tài khoản nội bộ",
+                "url": "/dashboard/user?source=admin_created"
+            },
+            {
+                "id": "unverified-accounts",
+                "label": "Chưa xác thực email",
+                "url": "/dashboard/user?preset=unverified"
+            },
+            {
+                "id": "inactive-accounts",
+                "label": "Đang bị khóa",
+                "url": "/dashboard/user?preset=inactive"
+            }
+        ]
+    },
+    {
         "id": "app",
         "label": "App",
         "icon": "apps",
         "url": null,
         "initiallyOpen": false,
         "children": [
-            {
-                "id": "user",
-                "label": "User",
-                "url": "/dashboard/user"
-            },
             {
                 "id": "content",
                 "label": "content",
@@ -118,6 +148,11 @@
                         "id": "property",
                         "label": "Property",
                         "url": "/dashboard/property"
+                    },
+                    {
+                        "id": "location",
+                        "label": "Location",
+                        "url": "/dashboard/location"
                     }
                 ]
             }

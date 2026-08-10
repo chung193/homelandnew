@@ -27,6 +27,11 @@ class RoleAndPermissionSeeder extends Seeder
             ['description' => 'Client role with limited access']
         );
 
+        $staffRole = Role::firstOrCreate(
+            ['name' => 'staff', 'guard_name' => 'api'],
+            ['description' => 'Staff role with operational access']
+        );
+
         // You can add default permissions here if needed
         // Example:
         // $permission = Permission::firstOrCreate(

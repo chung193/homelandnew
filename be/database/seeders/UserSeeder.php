@@ -18,6 +18,8 @@ class UserSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'chungvd.it@gmail.com',
             'password' => bcrypt('12345678'),
+            'email_verified_at' => now(),
+            'registration_source' => 'admin_created',
         ]);
         $user->assignRole('admin');
 

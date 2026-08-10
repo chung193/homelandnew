@@ -56,8 +56,9 @@ export const uploadAvatar = async (data = {}) => {
     return response;
 }
 
-export const userExport = async () => {
+export const userExport = async (params = {}) => {
     const response = await authInstance.post(`/user-export`, {}, {
+        params,
         headers: {
             'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         },

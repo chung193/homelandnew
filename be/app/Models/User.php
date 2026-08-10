@@ -38,6 +38,7 @@ class User extends Authenticatable implements JWTSubject, HasMedia, MustVerifyEm
         'email',
         'password',
         'is_active',
+        'registration_source',
     ];
 
     /**
@@ -60,6 +61,7 @@ class User extends Authenticatable implements JWTSubject, HasMedia, MustVerifyEm
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
     }
 

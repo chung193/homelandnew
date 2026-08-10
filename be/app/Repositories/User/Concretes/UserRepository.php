@@ -40,7 +40,20 @@ class UserRepository extends QueryableRepository implements UserRepositoryInterf
             AllowedFilter::exact('id'),
             'name',
             'email',
-            'is_active'
+            'is_active',
+            AllowedFilter::exact('registration_source'),
+            AllowedFilter::callback('is_verified', function ($query, $value) {
+                $normalized = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+
+                if ($normalized === true) {
+                    $query->whereNotNull('email_verified_at');
+                    return;
+                }
+
+                if ($normalized === false) {
+                    $query->whereNull('email_verified_at');
+                }
+            }),
         ];
     }
 
@@ -67,7 +80,7 @@ class UserRepository extends QueryableRepository implements UserRepositoryInterf
      */
     public function getAllowedFields(): array
     {
-        return ['id', 'name', 'email', 'is_active', 'created_at', 'updated_at'];
+        return ['id', 'name', 'email', 'is_active', 'registration_source', 'created_at', 'updated_at'];
     }
 
     public function bulkDelete(array $ids): int

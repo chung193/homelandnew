@@ -11,7 +11,8 @@ import { useLocation } from 'react-router-dom';
 
 const isPathActive = (item, pathname) => {
     if (!item?.url || /^javascript:/i.test(item.url)) return false;
-    return pathname === item.url || pathname.startsWith(`${item.url}/`);
+    const baseUrl = item.url.split('?')[0];
+    return pathname === baseUrl || pathname.startsWith(`${baseUrl}/`);
 };
 
 const hasActiveDescendant = (children, pathname) => {

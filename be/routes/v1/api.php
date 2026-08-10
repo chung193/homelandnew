@@ -17,6 +17,9 @@ use App\Http\Controllers\Api\V1\StatisticsController;
 use App\Http\Controllers\Api\V1\SearchController;
 use App\Http\Controllers\Api\V1\UploadFileController;
 use App\Http\Controllers\Api\V1\LocationController;
+use App\Http\Controllers\Api\V1\ProvinceController;
+use App\Http\Controllers\Api\V1\DistrictController;
+use App\Http\Controllers\Api\V1\WardController;
 use Illuminate\Support\Facades\Route;
 
 // client
@@ -150,6 +153,15 @@ Route::group(['middleware' => 'auth:api'], function () {
 
     Route::delete('/amenities', [AmenityController::class, 'bulkDestroy'])->name('amenities.bulk_destroy');
     Route::apiResource('amenities', AmenityController::class)->names('amenities');
+
+    Route::delete('/provinces', [ProvinceController::class, 'bulkDestroy'])->name('provinces.bulk_destroy');
+    Route::apiResource('provinces', ProvinceController::class)->names('provinces');
+
+    Route::delete('/districts', [DistrictController::class, 'bulkDestroy'])->name('districts.bulk_destroy');
+    Route::apiResource('districts', DistrictController::class)->names('districts');
+
+    Route::delete('/wards', [WardController::class, 'bulkDestroy'])->name('wards.bulk_destroy');
+    Route::apiResource('wards', WardController::class)->names('wards');
 
     Route::post('/role-export', [RoleController::class, 'export'])->name('roles.export');
     Route::post('/role/{role}/permission', [RoleController::class, 'assignPermissions'])->name('roles.assign_permissions');

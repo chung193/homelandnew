@@ -24,6 +24,7 @@ import Property from '@pages/Dashboard/Property/Property';
 import PropertyCreatePage from '@pages/Dashboard/Property/PropertyCreatePage';
 import PropertyType from '@pages/Dashboard/PropertyType/PropertyType';
 import Amenity from '@pages/Dashboard/Amenity/Amenity';
+import Location from '@pages/Dashboard/Location/Location';
 
 export const DashboardRoutes = [
     {
@@ -52,7 +53,8 @@ export const DashboardRoutes = [
             { path: 'property', element: <Property /> },
             { path: 'property/create', element: <PropertyCreatePage /> },
             { path: 'property-type', element: <PropertyType /> },
-            { path: 'amenity', element: <Amenity /> }
+            { path: 'amenity', element: <Amenity /> },
+            { path: 'location', element: <Location /> }
         ]
     }
 ];

@@ -1,6 +1,18 @@
 import { Chip, Avatar, Box, Stack, Typography } from "@mui/material";
 import { getMediaUrl } from '@utils/mediaUrl';
 
+const getSourceLabel = (value) => {
+    if (value === 'self_registered') {
+        return 'Tự đăng ký';
+    }
+
+    if (value === 'admin_created') {
+        return 'Nội bộ';
+    }
+
+    return value || 'Không rõ';
+};
+
 const getColumns = (t) => [
     {
         field: 'stt',
@@ -57,17 +69,45 @@ const getColumns = (t) => [
         }
     },
     {
-        field: 'status',
+        field: 'is_active',
         headerName: t('pages.user.table.status'),
         width: 150,
-        editable: false,
+        editable: true,
         renderCell: (params) => {
-            if (params.value) {
+            if (!params.value) {
                 return <Chip label="Người dùng đang tạm khóa" color="secondary" size="small" />
             }
 
             return <Chip label="Hoạt động" color="success" size="small" />
         }
+    },
+    {
+        field: 'is_verified',
+        headerName: 'Xác thực email',
+        width: 150,
+        editable: false,
+        renderCell: (params) => (
+            <Chip
+                label={params.value ? 'Đã xác thực' : 'Chưa xác thực'}
+                color={params.value ? 'success' : 'warning'}
+                size="small"
+                variant={params.value ? 'filled' : 'outlined'}
+            />
+        )
+    },
+    {
+        field: 'registration_source',
+        headerName: 'Nguồn tạo',
+        width: 140,
+        editable: false,
+        renderCell: (params) => (
+            <Chip
+                label={getSourceLabel(params.value)}
+                color={params.value === 'self_registered' ? 'info' : 'default'}
+                size="small"
+                variant="outlined"
+            />
+        )
     },
     {
         field: 'roles',

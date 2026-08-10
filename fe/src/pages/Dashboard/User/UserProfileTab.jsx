@@ -23,7 +23,7 @@ export default function UserProfileTab({ id }) {
             name: "",
             email: "",
             phone: "",
-            is_active: "",
+            is_active: false,
             city: "",
             position: "",
             website: "",
