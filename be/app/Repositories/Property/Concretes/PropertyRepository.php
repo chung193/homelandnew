@@ -2,7 +2,7 @@
 
 namespace App\Repositories\Property\Concretes;
 
-use App\Models\District;
+use App\Models\Ward;
 use App\Models\Property;
 use App\Models\Province;
 use App\Repositories\Base\Concretes\QueryableRepository;
@@ -102,10 +102,10 @@ class PropertyRepository extends QueryableRepository implements PropertyReposito
             }
         }
 
-        if ($cityCode = $request->integer('city_code')) {
-            $district = District::query()->where('code', $cityCode)->orWhere('id', $cityCode)->first();
-            if ($district) {
-                $query->where('district', 'like', "%{$district->name}%");
+        if ($wardCode = $request->integer('ward_code')) {
+            $ward = Ward::query()->where('code', $wardCode)->orWhere('id', $wardCode)->first();
+            if ($ward) {
+                $query->where('ward', 'like', "%{$ward->name}%");
             }
         }
 

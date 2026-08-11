@@ -37,6 +37,11 @@ class Province extends Model
         return $this->hasMany(District::class, 'province_code', 'code');
     }
 
+    public function wards(): HasMany
+    {
+        return $this->hasMany(Ward::class, 'province_code', 'code');
+    }
+
     public function scopeActive($query)
     {
         return $query->where('is_active', true);

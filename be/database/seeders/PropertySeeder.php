@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Amenity;
-use App\Models\District;
 use App\Models\Property;
 use App\Models\PropertyType;
 use App\Models\Province;
@@ -33,14 +32,10 @@ class PropertySeeder extends Seeder
 
         $amenityIds = Amenity::query()->pluck('id')->values()->all();
         $provinceNames = Province::query()->pluck('name')->values();
-        $districtsByProvince = District::query()
-            ->select(['province_code', 'name', 'code'])
+        $wardsByProvince = Ward::query()
+            ->select(['province_code', 'name'])
             ->get()
             ->groupBy('province_code');
-        $wardsByDistrict = Ward::query()
-            ->select(['district_code', 'name'])
-            ->get()
-            ->groupBy('district_code');
 
         DB::table('property_amenity')->delete();
         Property::query()->forceDelete();
@@ -59,16 +54,10 @@ class PropertySeeder extends Seeder
                 $provinceName = (string) $provinceNames->random();
 
                 $province = Province::query()->where('name', $provinceName)->first();
-                $districts = $province ? ($districtsByProvince->get($province->code) ?? collect()) : collect();
-
-                if ($districts->isNotEmpty()) {
-                    $district = $districts->random();
-                    $districtName = (string) $district->name;
-
-                    $wards = $wardsByDistrict->get($district->code) ?? collect();
-                    if ($wards->isNotEmpty()) {
-                        $wardName = (string) $wards->random()->name;
-                    }
+                $wards = $province ? ($wardsByProvince->get($province->code) ?? collect()) : collect();
+                if ($wards->isNotEmpty()) {
+                    $wardName = (string) $wards->random()->name;
+                    $districtName = '';
                 }
             }
 

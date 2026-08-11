@@ -48,7 +48,7 @@ type PageProps = {
         page?: string;
         q?: string;
         province_code?: string;
-        city_code?: string;
+        ward_code?: string;
         property_type_id?: string;
         listing_type?: string;
     }>;
@@ -97,7 +97,7 @@ async function getPropertiesPage(
 
 export default async function LocaleHomePage({ params, searchParams }: PageProps) {
     const { locale } = await params;
-    const { page, q, province_code, city_code, property_type_id, listing_type } = await searchParams;
+    const { page, q, province_code, ward_code, property_type_id, listing_type } = await searchParams;
     const activeLocale: Locale = isLocale(locale) ? locale : 'vi';
     const messages = getMessages(activeLocale);
     const requestedPage = Number(page ?? '1');
@@ -110,8 +110,8 @@ export default async function LocaleHomePage({ params, searchParams }: PageProps
     if (province_code) {
         filterParams.set('province_code', province_code);
     }
-    if (city_code) {
-        filterParams.set('city_code', city_code);
+    if (ward_code) {
+        filterParams.set('ward_code', ward_code);
     }
     if (property_type_id) {
         filterParams.set('property_type_id', property_type_id);

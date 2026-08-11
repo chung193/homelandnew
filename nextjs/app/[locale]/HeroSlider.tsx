@@ -55,10 +55,10 @@ export default function HeroSlider({ locale }: HeroSliderProps) {
     const [index, setIndex] = useState(0);
     const [keyword, setKeyword] = useState(searchParams.get('q') ?? '');
     const [provinceCode, setProvinceCode] = useState(searchParams.get('province_code') ?? '');
-    const [cityCode, setCityCode] = useState(searchParams.get('city_code') ?? '');
+    const [wardCode, setWardCode] = useState(searchParams.get('ward_code') ?? '');
     const [propertyTypeId, setPropertyTypeId] = useState(searchParams.get('property_type_id') ?? '');
     const [provinces, setProvinces] = useState<OptionItem[]>([]);
-    const [cities, setCities] = useState<OptionItem[]>([]);
+    const [wards, setWards] = useState<OptionItem[]>([]);
     const [propertyTypes, setPropertyTypes] = useState<OptionItem[]>([]);
 
     const slides = useMemo(() => HERO_IMAGES, []);
@@ -69,7 +69,7 @@ export default function HeroSlider({ locale }: HeroSliderProps) {
             const currentParams=new URLSearchParams(searchParamString);
             setKeyword(currentParams.get('q') ?? '');
             setProvinceCode(currentParams.get('province_code') ?? '');
-            setCityCode(currentParams.get('city_code') ?? '');
+            setWardCode(currentParams.get('ward_code') ?? '');
             setPropertyTypeId(currentParams.get('property_type_id') ?? '');
         },0);
         return()=>window.clearTimeout(timer);
@@ -110,26 +110,26 @@ export default function HeroSlider({ locale }: HeroSliderProps) {
 
     useEffect(() => {
         if (!provinceCode) {
-            const timer=window.setTimeout(()=>{setCities([]);setCityCode('')},0);
+            const timer=window.setTimeout(()=>{setWards([]);setWardCode('')},0);
             return()=>window.clearTimeout(timer);
         }
 
-        async function loadCities() {
+        async function loadWards() {
             const response = await fetch(
-                `/api/search-options?type=districts&province_code=${encodeURIComponent(provinceCode)}`,
+                `/api/search-options?type=wards&province_code=${encodeURIComponent(provinceCode)}`,
                 { cache: 'no-store' },
             );
 
             if (!response.ok) {
-                setCities([]);
+                setWards([]);
                 return;
             }
 
             const payload = await response.json();
-            setCities(payload?.data ?? []);
+            setWards(payload?.data ?? []);
         }
 
-        void loadCities();
+        void loadWards();
     }, [provinceCode]);
 
     function handleSearch(event: FormEvent<HTMLFormElement>) {
@@ -142,8 +142,8 @@ export default function HeroSlider({ locale }: HeroSliderProps) {
         if (provinceCode) {
             params.set('province_code', provinceCode);
         }
-        if (cityCode) {
-            params.set('city_code', cityCode);
+        if (wardCode) {
+            params.set('ward_code', wardCode);
         }
         if (propertyTypeId) {
             params.set('property_type_id', propertyTypeId);
@@ -156,7 +156,7 @@ export default function HeroSlider({ locale }: HeroSliderProps) {
     function handleResetFilters() {
         setKeyword('');
         setProvinceCode('');
-        setCityCode('');
+        setWardCode('');
         setPropertyTypeId('');
         router.push(`${pathname}?page=1`);
     }
@@ -164,13 +164,13 @@ export default function HeroSlider({ locale }: HeroSliderProps) {
     const selectedProvince = provinces.find(
         (province) => String(province.code ?? province.id) === provinceCode,
     );
-    const selectedCity = cities.find((city) => String(city.code ?? city.id) === cityCode);
+    const selectedWard = wards.find((ward) => String(ward.code ?? ward.id) === wardCode);
     const selectedPropertyType = propertyTypes.find((type) => String(type.id) === propertyTypeId);
 
     const activeFilters = [
         keyword.trim() ? keyword.trim() : null,
         selectedProvince?.name ?? null,
-        selectedCity?.name ?? null,
+        selectedWard?.name ?? null,
         selectedPropertyType?.name ?? null,
     ].filter((item): item is string => Boolean(item));
 
@@ -220,17 +220,17 @@ export default function HeroSlider({ locale }: HeroSliderProps) {
                         <label className="flex min-w-[170px] flex-col gap-1">
                             <Text color="inherit">{messages.searchCityLabel}</Text>
                             <select
-                                value={cityCode}
-                                onChange={(event) => setCityCode(event.target.value)}
+                                value={wardCode}
+                                onChange={(event) => setWardCode(event.target.value)}
                                 disabled={!provinceCode}
                                 className="hero-search-input select-soft h-10 border px-2 text-sm outline-none disabled:opacity-60"
                             >
                                 <option value="">
                                     {provinceCode ? messages.searchAllOption : messages.searchSelectProvinceFirst}
                                 </option>
-                                {cities.map((city) => (
-                                    <option key={`city-${city.id}`} value={String(city.code ?? city.id)}>
-                                        {city.name}
+                                {wards.map((ward) => (
+                                    <option key={`ward-${ward.id}`} value={String(ward.code ?? ward.id)}>
+                                        {ward.name}
                                     </option>
                                 ))}
                             </select>

@@ -67,9 +67,9 @@ export const getDistricts = async (provinceCode) => {
     return response;
 };
 
-export const getWards = async (districtCode) => {
+export const getWards = async (provinceCode) => {
     const response = await authInstance.get('locations/wards', {
-        params: { district_code: districtCode },
+        params: { province_code: provinceCode },
     });
     return response;
 };

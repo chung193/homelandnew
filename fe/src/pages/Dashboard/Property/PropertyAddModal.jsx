@@ -9,7 +9,7 @@ import 'ckeditor5/ckeditor5.css';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { propertySchema } from './PropertySchema';
-import { getAmenities, getDistricts, getPropertyTypes, getProvinces, getWards } from './PropertyServices';
+import { getAmenities, getPropertyTypes, getProvinces, getWards } from './PropertyServices';
 import { slugify } from '@utils/common';
 
 const normalizePriceUnit=(value)=>{const unit=String(value||'').trim().toLowerCase();if(['month','months','monthly','tháng','thang'].includes(unit))return'month';if(['day','days','daily','ngày','ngay'].includes(unit))return'day';if(['total','m2','night'].includes(unit))return unit;return'night'};
@@ -20,12 +20,9 @@ const PropertyAddModal = ({ onSubmit, onClose, showFullCreateButton = true, init
     const [propertyTypes, setPropertyTypes] = useState([]);
     const [amenities, setAmenities] = useState([]);
     const [provinces, setProvinces] = useState([]);
-    const [districts, setDistricts] = useState([]);
     const [wards, setWards] = useState([]);
     const [selectedProvinceCode, setSelectedProvinceCode] = useState('');
-    const [selectedDistrictCode, setSelectedDistrictCode] = useState('');
     const [provinceSearch, setProvinceSearch] = useState('');
-    const [districtSearch, setDistrictSearch] = useState('');
     const [wardSearch, setWardSearch] = useState('');
     const [selectedImages, setSelectedImages] = useState([]);
     const [selectedFeaturedImage, setSelectedFeaturedImage] = useState(null);
@@ -56,12 +53,6 @@ const PropertyAddModal = ({ onSubmit, onClose, showFullCreateButton = true, init
     }, [initialData, provinces]);
 
     useEffect(() => {
-        if (!initialData?.district || districts.length === 0) return;
-        const district=districts.find((item)=>item.name===initialData.district);
-        if (district) setSelectedDistrictCode(district.code??district.id);
-    }, [districts, initialData]);
-
-    useEffect(() => {
         return () => {
             imagePreviewUrls.forEach((url) => URL.revokeObjectURL(url));
             if (featuredPreviewUrl) {
@@ -72,34 +63,13 @@ const PropertyAddModal = ({ onSubmit, onClose, showFullCreateButton = true, init
 
     useEffect(() => {
         if (!selectedProvinceCode) {
-            setDistricts([]);
-            setSelectedDistrictCode('');
-            setWards([]);
-            return;
-        }
-
-        const loadDistricts = async () => {
-            try {
-                const res = await getDistricts(selectedProvinceCode);
-                setDistricts(res.data.data || []);
-            } catch (err) {
-                console.error(err);
-                setDistricts([]);
-            }
-        };
-
-        loadDistricts();
-    }, [selectedProvinceCode]);
-
-    useEffect(() => {
-        if (!selectedDistrictCode) {
             setWards([]);
             return;
         }
 
         const loadWards = async () => {
             try {
-                const res = await getWards(selectedDistrictCode);
+                const res = await getWards(selectedProvinceCode);
                 setWards(res.data.data || []);
             } catch (err) {
                 console.error(err);
@@ -108,7 +78,7 @@ const PropertyAddModal = ({ onSubmit, onClose, showFullCreateButton = true, init
         };
 
         loadWards();
-    }, [selectedDistrictCode]);
+    }, [selectedProvinceCode]);
 
     const {
         control,
@@ -186,19 +156,8 @@ const PropertyAddModal = ({ onSubmit, onClose, showFullCreateButton = true, init
         setValue('city', province?.name || newValue?.name || '', { shouldValidate: true });
         setValue('district', '', { shouldValidate: true });
         setValue('ward', '', { shouldValidate: true });
-        setSelectedDistrictCode('');
         setWards([]);
         setProvinceSearch('');
-    };
-
-    const handleDistrictChange = (event, newValue) => {
-        const district = districts.find((item) => String(item.id) === String(newValue?.id) || String(item.code) === String(newValue?.code) || String(item.name) === String(newValue?.name));
-        const districtCode = district?.code ?? district?.id ?? newValue?.code ?? newValue?.id ?? '';
-
-        setSelectedDistrictCode(districtCode);
-        setValue('district', district?.name || newValue?.name || '', { shouldValidate: true });
-        setValue('ward', '', { shouldValidate: true });
-        setDistrictSearch('');
     };
 
     const handleWardChange = (event, newValue) => {
@@ -315,31 +274,6 @@ const PropertyAddModal = ({ onSubmit, onClose, showFullCreateButton = true, init
                         )}
                     />
                     <Controller
-                        name="district"
-                        control={control}
-                        render={({ field }) => (
-                            <Autocomplete
-                                fullWidth
-                                size="small"
-                                options={getFilteredOptions(districts, districtSearch)}
-                                getOptionLabel={(option) => option?.name || ''}
-                                value={districts.find((item) => item.name === field.value) || null}
-                                onChange={handleDistrictChange}
-                                inputValue={districtSearch}
-                                onInputChange={(event, value) => setDistrictSearch(value)}
-                                disabled={!selectedProvinceCode}
-                                renderInput={(params) => (
-                                    <TextField
-                                        {...params}
-                                        label={t('pages.property.form.district')}
-                                        error={!!errors.district}
-                                        helperText={errors.district?.message}
-                                    />
-                                )}
-                            />
-                        )}
-                    />
-                    <Controller
                         name="ward"
                         control={control}
                         render={({ field }) => (
@@ -352,7 +286,7 @@ const PropertyAddModal = ({ onSubmit, onClose, showFullCreateButton = true, init
                                 onChange={handleWardChange}
                                 inputValue={wardSearch}
                                 onInputChange={(event, value) => setWardSearch(value)}
-                                disabled={!selectedDistrictCode}
+                                disabled={!selectedProvinceCode}
                                 renderInput={(params) => (
                                     <TextField
                                         {...params}

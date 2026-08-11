@@ -41,4 +41,9 @@ class Ward extends Model
     {
         return $this->belongsTo(Province::class, 'province_code', 'code');
     }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
 }

@@ -24,9 +24,9 @@ export async function GET(request: Request) {
     }
 
     if (type === 'wards') {
-        const districtCode = searchParams.get('district_code');
-        if (!districtCode) return NextResponse.json({ error: 'district_code is required' }, { status: 422 });
-        targetUrl = `${API_BASE_URL}/locations/wards?district_code=${encodeURIComponent(districtCode)}`;
+        const provinceCode = searchParams.get('province_code');
+        if (!provinceCode) return NextResponse.json({ error: 'province_code is required' }, { status: 422 });
+        targetUrl = `${API_BASE_URL}/locations/wards?province_code=${encodeURIComponent(provinceCode)}`;
     }
 
     if (type === 'property-types') {
