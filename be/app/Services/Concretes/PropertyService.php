@@ -12,7 +12,6 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Str;
-use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class PropertyService extends BaseService implements PropertyServiceInterface
 {
@@ -85,14 +84,18 @@ class PropertyService extends BaseService implements PropertyServiceInterface
 
     public function updateProperty(int $id, array $data): Model
     {
-        $amenities = $data['amenities'] ?? null;
-        unset($data['amenities']);
+        $amenities = ($data['clear_amenities'] ?? false) ? [] : ($data['amenities'] ?? null);
+        unset($data['amenities'], $data['clear_amenities']);
 
         $images = $data['images'] ?? null;
         unset($data['images']);
 
         $featuredImage = $data['featured_image'] ?? null;
         unset($data['featured_image']);
+
+        $removeImageIds = $data['remove_image_ids'] ?? [];
+        $removeFeaturedImage = (bool) ($data['remove_featured_image'] ?? false);
+        unset($data['remove_image_ids'], $data['remove_featured_image']);
 
         $property = $this->repository->update($id, $data);
 
@@ -103,6 +106,13 @@ class PropertyService extends BaseService implements PropertyServiceInterface
         if ($featuredImage) {
             $property->clearMediaCollection('featured_image');
             $property->addMedia($featuredImage)->toMediaCollection('featured_image');
+        }
+
+        if ($removeImageIds) {
+            $property->getMedia('gallery')->whereIn('id', array_map('intval', $removeImageIds))->each->delete();
+        }
+        if ($removeFeaturedImage && ! $featuredImage) {
+            $property->clearMediaCollection('featured_image');
         }
 
         if ($images) {
@@ -120,6 +130,7 @@ class PropertyService extends BaseService implements PropertyServiceInterface
     {
         try {
             $this->repository->delete($id);
+
             return true;
         } catch (ModelNotFoundException) {
             throw new ModelNotFoundException('Property not found');
@@ -133,9 +144,25 @@ class PropertyService extends BaseService implements PropertyServiceInterface
             if ($count === 0) {
                 abort(404, 'properties not found');
             }
+
             return $count;
         } catch (ModelNotFoundException) {
             throw new ModelNotFoundException('Property not found');
         }
+    }
+
+    public function getPublicProperties(Request $request, int $perPage = 12): LengthAwarePaginator
+    {
+        return $this->propertyRepository->getPublicProperties($request, $perPage);
+    }
+
+    public function getPublicProperty(int $id): Property
+    {
+        return $this->propertyRepository->findPublicProperty($id);
+    }
+
+    public function recordView(int $id): int
+    {
+        return $this->propertyRepository->incrementViews($id);
     }
 }

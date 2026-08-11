@@ -63,6 +63,10 @@ class PostService extends BaseService implements PostServiceInterface
 
         $query = Post::query()
             ->with(['user', 'category', 'tags'])
+            ->where('status', 'published')
+            ->where(function ($builder) {
+                $builder->whereNull('published_at')->orWhere('published_at', '<=', now());
+            })
             ->orderByDesc('created_at');
 
         if ($resolvedUserId > 0) {

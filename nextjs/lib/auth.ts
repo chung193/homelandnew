@@ -3,7 +3,25 @@ export const CUSTOMER_USER_KEY = 'homelend:customer-user';
 
 export type CustomerSession = {
     token: string;
-    user?: unknown;
+    user?: CustomerUser;
+};
+
+export type CustomerUser = {
+    id: number;
+    name: string;
+    email: string;
+    avatar?: string | null;
+    account_type?: 'customer' | 'property_owner' | string;
+    wallet_balance?: number;
+    test_posting_credits?: number;
+    is_verified?: boolean;
+    detail?: {
+        phone?: string | null;
+        address?: string | null;
+        city?: string | null;
+        birthday?: string | null;
+        description?: string | null;
+    } | null;
 };
 
 export function getCustomerToken(): string | null {
@@ -24,6 +42,20 @@ export function setCustomerSession(session: CustomerSession): void {
     if (session.user) {
         window.localStorage.setItem(CUSTOMER_USER_KEY, JSON.stringify(session.user));
     }
+
+    window.dispatchEvent(new Event('homelend:session-changed'));
+}
+
+export function getCustomerUser(): CustomerUser | null {
+    if (typeof window === 'undefined') return null;
+    const value = window.localStorage.getItem(CUSTOMER_USER_KEY);
+    if (!value) return null;
+    try {
+        return JSON.parse(value) as CustomerUser;
+    } catch {
+        window.localStorage.removeItem(CUSTOMER_USER_KEY);
+        return null;
+    }
 }
 
 export function clearCustomerSession(): void {
@@ -33,4 +65,5 @@ export function clearCustomerSession(): void {
 
     window.localStorage.removeItem(CUSTOMER_TOKEN_KEY);
     window.localStorage.removeItem(CUSTOMER_USER_KEY);
+    window.dispatchEvent(new Event('homelend:session-changed'));
 }

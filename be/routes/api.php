@@ -20,6 +20,7 @@ Route::get('ping', function () {
 Route::prefix('json-api')->group(function () {
     Route::get('properties', [\App\Http\Controllers\Api\V1\JsonApi\PropertyJsonApiController::class, 'index']);
     Route::get('properties/{property}', [\App\Http\Controllers\Api\V1\JsonApi\PropertyJsonApiController::class, 'show']);
+    Route::post('properties/{property}/view', [\App\Http\Controllers\Api\V1\JsonApi\PropertyJsonApiController::class, 'recordView']);
 });
 
 Route::prefix('locations')->group(function () {

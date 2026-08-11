@@ -5,10 +5,6 @@ import { useSelector } from 'react-redux';
 const Logo = () => {
     const isCollapsed = useSelector((state) => state.ui.data.CollapseMenu);
 
-    // Local logo files
-    const logoFull = '/logo-light.png';
-    const logoIcon = '/logo.png';
-
     return (
         <Box
             component={NavLink}
@@ -28,8 +24,8 @@ const Logo = () => {
         >
             <Box
                 component="img"
-                src={isCollapsed ? logoIcon : logoFull}
-                alt="Logo"
+                src="/logo.png"
+                alt="Homelend"
                 loading="eager"
                 sx={{
                     height: isCollapsed ? 32 : 35,

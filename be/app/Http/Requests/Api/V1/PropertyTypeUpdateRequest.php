@@ -21,6 +21,7 @@ class PropertyTypeUpdateRequest extends FormRequest
             'sort_order' => ['nullable', 'integer'],
             'amenity_ids' => ['nullable', 'array'],
             'amenity_ids.*' => ['integer', 'exists:amenities,id'],
+            'icon' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ];
     }
 }

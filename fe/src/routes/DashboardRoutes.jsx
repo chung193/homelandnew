@@ -22,9 +22,12 @@ import VideoCall from '@pages/Dashboard/VideoCall';
 import Calendar from '@pages/Dashboard/Calendar';
 import Property from '@pages/Dashboard/Property/Property';
 import PropertyCreatePage from '@pages/Dashboard/Property/PropertyCreatePage';
+import PropertyDetail from '@pages/Dashboard/Property/PropertyDetail';
 import PropertyType from '@pages/Dashboard/PropertyType/PropertyType';
 import Amenity from '@pages/Dashboard/Amenity/Amenity';
 import Location from '@pages/Dashboard/Location/Location';
+import OwnerApplication from '@pages/Dashboard/OwnerApplication/OwnerApplication';
+import OwnerApplicationDetail from '@pages/Dashboard/OwnerApplication/OwnerApplicationDetail';
 
 export const DashboardRoutes = [
     {
@@ -52,9 +55,12 @@ export const DashboardRoutes = [
             { path: 'calendar', element: <Calendar /> },
             { path: 'property', element: <Property /> },
             { path: 'property/create', element: <PropertyCreatePage /> },
+            { path: 'property/:id', element: <PropertyDetail /> },
             { path: 'property-type', element: <PropertyType /> },
             { path: 'amenity', element: <Amenity /> },
-            { path: 'location', element: <Location /> }
+            { path: 'location', element: <Location /> },
+            { path: 'owner-applications', element: <OwnerApplication /> },
+            { path: 'owner-applications/:id', element: <OwnerApplicationDetail /> }
         ]
     }
 ];

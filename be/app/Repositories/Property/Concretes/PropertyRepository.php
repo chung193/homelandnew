@@ -2,7 +2,9 @@
 
 namespace App\Repositories\Property\Concretes;
 
+use App\Models\District;
 use App\Models\Property;
+use App\Models\Province;
 use App\Repositories\Base\Concretes\QueryableRepository;
 use App\Repositories\Property\Contracts\PropertyRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
@@ -62,5 +64,68 @@ class PropertyRepository extends QueryableRepository implements PropertyReposito
     public function bulkDelete(array $ids): int
     {
         return $this->model->whereIn('id', $ids)->delete();
+    }
+
+    public function getPublicProperties(Request $request, int $perPage = 12): LengthAwarePaginator
+    {
+        $query = $this->model->newQuery()
+            ->with(['propertyType', 'amenities', 'media'])
+            ->active()
+            ->where('status', 'published')
+            ->latest('created_at');
+
+        $search = trim((string) $request->input('q', ''));
+        if ($search !== '') {
+            $query->where(function ($builder) use ($search) {
+                $builder->where('title', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('address', 'like', "%{$search}%")
+                    ->orWhere('city', 'like', "%{$search}%")
+                    ->orWhere('district', 'like', "%{$search}%")
+                    ->orWhere('ward', 'like', "%{$search}%");
+            });
+        }
+
+        if ($propertyTypeId = $request->integer('property_type_id')) {
+            $query->where('property_type_id', $propertyTypeId);
+        }
+
+        $listingType = (string) $request->input('listing_type', '');
+        if (in_array($listingType, ['sale', 'rent'], true)) {
+            $query->where('listing_type', $listingType);
+        }
+
+        if ($provinceCode = $request->integer('province_code')) {
+            $province = Province::query()->where('code', $provinceCode)->orWhere('id', $provinceCode)->first();
+            if ($province) {
+                $query->where('city', 'like', "%{$province->name}%");
+            }
+        }
+
+        if ($cityCode = $request->integer('city_code')) {
+            $district = District::query()->where('code', $cityCode)->orWhere('id', $cityCode)->first();
+            if ($district) {
+                $query->where('district', 'like', "%{$district->name}%");
+            }
+        }
+
+        return $query->paginate($perPage);
+    }
+
+    public function findPublicProperty(int $id): Property
+    {
+        return $this->model->newQuery()
+            ->with(['propertyType', 'amenities', 'media'])
+            ->active()
+            ->where('status', 'published')
+            ->findOrFail($id);
+    }
+
+    public function incrementViews(int $id): int
+    {
+        $property = $this->findPublicProperty($id);
+        $property->increment('views');
+
+        return (int) $property->fresh()->views;
     }
 }

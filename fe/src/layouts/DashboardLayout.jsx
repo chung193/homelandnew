@@ -1,10 +1,11 @@
-import { Outlet, NavLink } from 'react-router-dom';
-import { Box } from '@mui/material';
+import { Outlet, useNavigate } from 'react-router-dom';
+import { Box, Drawer } from '@mui/material';
 import Menu from '@layouts/partials/Menu';
 import SiteLogo from './partials/Menu/SiteLogo';
 import { useSelector } from 'react-redux';
 import AppBar from './partials/Header/AppBar';
 import CreateBy from '@components/CreateBy';
+import { useState } from 'react';
 
 const FULL = 250;
 const MINI = 56;
@@ -12,6 +13,8 @@ const MINI = 56;
 export default function DashboardLayout() {
     const isCollapsed = useSelector((state) => state.ui.data.CollapseMenu);
     const sideWidth = isCollapsed ? MINI : FULL;
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const navigate = useNavigate();
 
     return (
         <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
@@ -49,7 +52,12 @@ export default function DashboardLayout() {
                 <Menu open={!isCollapsed} />
             </Box>
 
-            <AppBar />
+            <Drawer open={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} sx={{ display: { xs: 'block', sm: 'none' }, '& .MuiDrawer-paper': { width: FULL, bgcolor: 'primary.main', color: 'primary.contrastText' } }}>
+                <SiteLogo />
+                <Menu onNavigate={(url) => { navigate(url); setMobileMenuOpen(false); }} />
+            </Drawer>
+
+            <AppBar onOpenMobileMenu={() => setMobileMenuOpen(true)} />
 
             {/* Main full width + padding-left (đồng bộ với AppBar) */}
             <Box

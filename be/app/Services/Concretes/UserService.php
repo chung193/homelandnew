@@ -10,8 +10,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 
 class UserService extends BaseService implements UserServiceInterface
 {
@@ -83,7 +83,7 @@ class UserService extends BaseService implements UserServiceInterface
      */
     public function createUser(array $data): Model
     {
-        $user =  $this->repository->create([
+        $user = $this->repository->create([
             ...$data,
             'registration_source' => 'admin_created',
         ]);
@@ -100,6 +100,7 @@ class UserService extends BaseService implements UserServiceInterface
             'birthday' => $data['birthday'] ?? null,
         ]);
         $user->sendEmailVerificationNotification();
+
         return $user;
     }
 
@@ -111,6 +112,8 @@ class UserService extends BaseService implements UserServiceInterface
         try {
             return DB::transaction(function () use ($id, $data) {
 
+                $currentUser = $this->userRepository->query()->findOrFail($id);
+
                 // Tách data cho user
                 $userData = Arr::only($data, [
                     'name',
@@ -118,6 +121,10 @@ class UserService extends BaseService implements UserServiceInterface
                     'password',
                     'is_active',
                 ]);
+
+                if ((array_key_exists('is_active', $data) && ! (bool) $data['is_active']) || array_key_exists('password', $data)) {
+                    $userData['auth_version'] = ((int) $currentUser->auth_version) + 1;
+                }
 
                 // Tách data cho detail
                 $detailData = Arr::only($data, [
@@ -148,6 +155,15 @@ class UserService extends BaseService implements UserServiceInterface
         }
     }
 
+    public function forceLogout(int $id): Model
+    {
+        $user = $this->userRepository->query()->findOrFail($id);
+
+        return $this->repository->update($id, [
+            'auth_version' => ((int) $user->auth_version) + 1,
+        ]);
+    }
+
     /**
      * Delete user
      */
@@ -165,7 +181,6 @@ class UserService extends BaseService implements UserServiceInterface
     /**
      * Delete users
      */
-
     public function deleteUsers(array $ids): int
     {
         try {
@@ -173,6 +188,7 @@ class UserService extends BaseService implements UserServiceInterface
             if ($count === 0) {
                 abort(404, 'Users not found');
             }
+
             return $count;
         } catch (ModelNotFoundException) {
             throw new ModelNotFoundException('User not found');

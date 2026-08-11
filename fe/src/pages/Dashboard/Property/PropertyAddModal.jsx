@@ -12,7 +12,9 @@ import { propertySchema } from './PropertySchema';
 import { getAmenities, getDistricts, getPropertyTypes, getProvinces, getWards } from './PropertyServices';
 import { slugify } from '@utils/common';
 
-const PropertyAddModal = ({ onSubmit, onClose, showFullCreateButton = true }) => {
+const normalizePriceUnit=(value)=>{const unit=String(value||'').trim().toLowerCase();if(['month','months','monthly','tháng','thang'].includes(unit))return'month';if(['day','days','daily','ngày','ngay'].includes(unit))return'day';if(['total','m2','night'].includes(unit))return unit;return'night'};
+
+const PropertyAddModal = ({ onSubmit, onClose, showFullCreateButton = true, initialData = null }) => {
     const { t } = useTranslation('dashboard');
     const navigate = useNavigate();
     const [propertyTypes, setPropertyTypes] = useState([]);
@@ -29,6 +31,8 @@ const PropertyAddModal = ({ onSubmit, onClose, showFullCreateButton = true }) =>
     const [selectedFeaturedImage, setSelectedFeaturedImage] = useState(null);
     const [imagePreviewUrls, setImagePreviewUrls] = useState([]);
     const [featuredPreviewUrl, setFeaturedPreviewUrl] = useState('');
+    const [removedImageIds, setRemovedImageIds] = useState([]);
+    const [removeFeaturedImage, setRemoveFeaturedImage] = useState(false);
 
     useEffect(() => {
         const loadOptions = async () => {
@@ -44,6 +48,18 @@ const PropertyAddModal = ({ onSubmit, onClose, showFullCreateButton = true }) =>
 
         loadOptions();
     }, []);
+
+    useEffect(() => {
+        if (!initialData?.city || provinces.length === 0) return;
+        const province=provinces.find((item)=>item.name===initialData.city);
+        if (province) setSelectedProvinceCode(province.code??province.id);
+    }, [initialData, provinces]);
+
+    useEffect(() => {
+        if (!initialData?.district || districts.length === 0) return;
+        const district=districts.find((item)=>item.name===initialData.district);
+        if (district) setSelectedDistrictCode(district.code??district.id);
+    }, [districts, initialData]);
 
     useEffect(() => {
         return () => {
@@ -102,27 +118,14 @@ const PropertyAddModal = ({ onSubmit, onClose, showFullCreateButton = true }) =>
         formState: { errors, isSubmitting },
     } = useForm({
         resolver: zodResolver(propertySchema),
-        defaultValues: {
-            property_type_id: '',
-            listing_type: 'sale',
-            title: '',
-            slug: '',
-            description: '',
-            address: '',
-            address_detail: '',
-            city: '',
-            district: '',
-            ward: '',
-            price: '',
-            price_unit: 'VND',
-            area: '',
-            bedrooms: '',
-            bathrooms: '',
-            floor: '',
-            status: 'draft',
-            is_active: true,
-            amenities: [],
-        },
+        defaultValues: initialData ? {
+            ...initialData,
+            property_type_id: initialData.property_type_id ?? '',
+            price_unit: normalizePriceUnit(initialData.price_unit),
+            long_term_months: initialData.long_term_months ?? '', long_term_price: initialData.long_term_price ?? '', deposit_amount: initialData.deposit_amount ?? '',
+            bedrooms: initialData.bedrooms ?? '', bathrooms: initialData.bathrooms ?? '', floor: initialData.floor ?? '', area: initialData.area ?? '', price: initialData.price ?? '',
+            amenities: (initialData.amenities??[]).map((item)=>Number(item.id??item)),
+        } : { property_type_id:'',listing_type:'sale',title:'',slug:'',description:'',address:'',address_detail:'',city:'',district:'',ward:'',price:'',price_unit:'month',long_term_months:'',long_term_price:'',deposit_amount:'',area:'',bedrooms:'',bathrooms:'',floor:'',legal_info:'',status:'draft',is_active:true,amenities:[] },
     });
 
     const submitHandler = (data) => {
@@ -133,6 +136,9 @@ const PropertyAddModal = ({ onSubmit, onClose, showFullCreateButton = true }) =>
             slug: data.slug || slugify(data.title),
             property_type_id: Number(data.property_type_id),
             price: data.price ? Number(data.price) : null,
+            long_term_months: data.long_term_months ? Number(data.long_term_months) : null,
+            long_term_price: data.long_term_price !== '' ? Number(data.long_term_price) : null,
+            deposit_amount: data.deposit_amount !== '' ? Number(data.deposit_amount) : null,
             area: data.area ? Number(data.area) : null,
             bedrooms: data.bedrooms ? Number(data.bedrooms) : null,
             bathrooms: data.bathrooms ? Number(data.bathrooms) : null,
@@ -140,21 +146,25 @@ const PropertyAddModal = ({ onSubmit, onClose, showFullCreateButton = true }) =>
             amenities: (data.amenities || []).map((item) => Number(item)),
         }).forEach(([key, value]) => {
             if (value === null || value === undefined || value === '') {
+                if (initialData) formData.append(key, '');
                 return;
             }
 
             if (Array.isArray(value)) {
                 value.forEach((item) => formData.append(`${key}[]`, item));
+                if (initialData && key === 'amenities' && value.length === 0) formData.append('clear_amenities', '1');
                 return;
             }
 
-            formData.append(key, value);
+            formData.append(key, typeof value === 'boolean' ? (value ? '1' : '0') : value);
         });
 
         selectedImages.forEach((file) => formData.append('images[]', file));
         if (selectedFeaturedImage) {
             formData.append('featured_image', selectedFeaturedImage);
         }
+        removedImageIds.forEach((id)=>formData.append('remove_image_ids[]',id));
+        if(removeFeaturedImage)formData.append('remove_featured_image','1');
 
         onSubmit(formData);
     };
@@ -357,7 +367,13 @@ const PropertyAddModal = ({ onSubmit, onClose, showFullCreateButton = true }) =>
                 </Stack>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                     <TextField label={t('pages.property.form.price')} type="number" fullWidth size="small" {...register('price')} />
-                    <TextField label={t('pages.property.form.priceUnit')} fullWidth size="small" {...register('price_unit')} />
+                    <TextField label={t('pages.property.form.priceUnit')} select fullWidth size="small" defaultValue={normalizePriceUnit(initialData?.price_unit||'month')} {...register('price_unit')}><MenuItem value="month">Tháng</MenuItem><MenuItem value="day">Ngày</MenuItem><MenuItem value="night">Đêm</MenuItem><MenuItem value="total">Tổng giá bán</MenuItem><MenuItem value="m2">Theo m²</MenuItem></TextField>
+                </Stack>
+                <TextField label="Thông tin pháp lý" fullWidth multiline minRows={2} size="small" {...register('legal_info')} />
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                    <TextField label="Ưu đãi khi thuê từ (tháng)" type="number" fullWidth size="small" inputProps={{ min: 2 }} {...register('long_term_months')} helperText="Ví dụ: từ 6 tháng" />
+                    <TextField label="Giá ưu đãi mỗi tháng" type="number" fullWidth size="small" inputProps={{ min: 0 }} {...register('long_term_price')} />
+                    <TextField label="Tiền đặt cọc (tùy chọn)" type="number" fullWidth size="small" inputProps={{ min: 0 }} {...register('deposit_amount')} />
                 </Stack>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                     <TextField label={t('pages.property.form.area')} type="number" fullWidth size="small" {...register('area')} />
@@ -402,6 +418,7 @@ const PropertyAddModal = ({ onSubmit, onClose, showFullCreateButton = true }) =>
                         />
                     </Button>
                     <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: 1 }}>
+                        {(initialData?.images??[]).filter((image)=>!removedImageIds.includes(image.id)).map((image)=><Box key={image.id} sx={{position:'relative',width:96,height:96,borderRadius:1,overflow:'hidden',border:'1px solid',borderColor:'divider'}}><Box component="img" src={image.thumb||image.url} alt={image.name||'Ảnh hiện tại'} sx={{width:'100%',height:'100%',objectFit:'cover'}}/><IconButton size="small" sx={{position:'absolute',top:4,right:4,bgcolor:'rgba(0,0,0,.6)',color:'white'}} onClick={()=>setRemovedImageIds((current)=>[...current,image.id])}><Close fontSize="small"/></IconButton></Box>)}
                         {selectedImages.map((file, index) => (
                             <Box key={`${file.name}-${index}`} sx={{ position: 'relative', width: 96, height: 96, borderRadius: 1, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
                                 <Box component="img" src={imagePreviewUrls[index]} alt={file.name} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -429,6 +446,7 @@ const PropertyAddModal = ({ onSubmit, onClose, showFullCreateButton = true }) =>
                             </Box>
                         </Box>
                     )}
+                    {!selectedFeaturedImage&&initialData?.featured_image&&!removeFeaturedImage?<Box sx={{mt:2,position:'relative',width:140,height:140}}><Box component="img" src={initialData.featured_image} alt="Ảnh đại diện hiện tại" sx={{width:'100%',height:'100%',objectFit:'cover',borderRadius:1}}/><IconButton size="small" sx={{position:'absolute',top:4,right:4,bgcolor:'rgba(0,0,0,.6)',color:'white'}} onClick={()=>setRemoveFeaturedImage(true)}><Close fontSize="small"/></IconButton></Box>:null}
                 </Box>
 
                 <Controller
@@ -496,7 +514,7 @@ const PropertyAddModal = ({ onSubmit, onClose, showFullCreateButton = true }) =>
                     )}
                 />
 
-                <FormControlLabel control={<Checkbox {...register('is_active')} defaultChecked />} label={t('pages.property.form.isActive')} />
+                <FormControlLabel control={<Checkbox {...register('is_active')} />} label={t('pages.property.form.isActive')} />
 
                 <Stack direction="row" justifyContent="flex-end" spacing={1}>
                     <Button type="button" variant="outlined" sx={{ textTransform: 'none' }} disabled={isSubmitting} onClick={onClose}>

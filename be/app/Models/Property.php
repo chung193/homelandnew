@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -35,6 +36,7 @@ class Property extends Model implements HasMedia
         'longitude',
         'price',
         'price_unit',
+        'long_term_months', 'long_term_price', 'deposit_amount',
         'area',
         'bedrooms',
         'bathrooms',
@@ -46,6 +48,8 @@ class Property extends Model implements HasMedia
         'is_deleted',
         'qr_code',
         'qr_generated_at',
+        'posting_fee',
+        'views',
     ];
 
     protected $casts = [
@@ -56,6 +60,9 @@ class Property extends Model implements HasMedia
         'is_active' => 'boolean',
         'is_deleted' => 'boolean',
         'qr_generated_at' => 'datetime',
+        'posting_fee' => 'integer',
+        'views' => 'integer',
+        'long_term_months' => 'integer', 'long_term_price' => 'decimal:2', 'deposit_amount' => 'decimal:2',
     ];
 
     public function user(): BelongsTo
@@ -74,6 +81,16 @@ class Property extends Model implements HasMedia
             ->withTimestamps();
     }
 
+    public function bookings(): HasMany
+    {
+        return $this->hasMany(Booking::class);
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(PropertyReview::class);
+    }
+
     public function scopeActive($query)
     {
         return $query->where('is_active', true)->where('is_deleted', false);
@@ -83,7 +100,7 @@ class Property extends Model implements HasMedia
     {
         $this
             ->addMediaConversion('preview')
-            ->fit(Fit\Contain, 300, 300)
+            ->fit(Fit::Contain, 300, 300)
             ->nonQueued();
     }
 

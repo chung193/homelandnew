@@ -40,3 +40,16 @@ authInstance.interceptors.request.use(
         return Promise.reject(error)
     }
 )
+
+authInstance.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response?.status === 401 && !error.config?.url?.includes('/auth/login')) {
+            localStorage.removeItem('user')
+            if (!window.location.pathname.startsWith('/auth/login')) {
+                window.location.assign('/auth/login?reason=session-ended')
+            }
+        }
+        return Promise.reject(error)
+    }
+)

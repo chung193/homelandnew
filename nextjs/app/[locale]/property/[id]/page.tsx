@@ -1,16 +1,20 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Badge } from '@astryxdesign/core/Badge';
 import { Button } from '@astryxdesign/core/Button';
 import { Card } from '@astryxdesign/core/Card';
-import { Carousel } from '@astryxdesign/core/Carousel';
 import { Heading } from '@astryxdesign/core/Heading';
 import { HStack } from '@astryxdesign/core/HStack';
 import { Text } from '@astryxdesign/core/Text';
 import { VStack } from '@astryxdesign/core/VStack';
-import ThemeModeToggle from '../../ThemeModeToggle';
 import { getMessages } from '../../../../i18n/messages';
 import { isLocale, type Locale } from '../../../../i18n/config';
+import BookingPanel from './BookingPanel';
+import ReviewPanel from './ReviewPanel';
+import PropertyGallery from './PropertyGallery';
+import {statusLabel} from '../../../../lib/displayLabels';
+import PropertyViewCount from './PropertyViewCount';
 
 type PropertyAttributes = {
     title: string;
@@ -24,7 +28,11 @@ type PropertyAttributes = {
     status: string;
     'listing-type': string;
     'price-unit': string;
+    'long-term-months'?: number | null;
+    'long-term-price'?: string | null;
+    'deposit-amount'?: string | null;
     'featured-image'?: string | null;
+    'view-count'?: number;
 };
 
 type PropertyDetailResponse = {
@@ -129,7 +137,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const messages = getMessages(activeLocale);
 
     try {
-        const payload = await getPropertyDetail(id);
+        const payload = await getPropertyDetail(id.replace(/[,.]+$/, ''));
         const title = payload.data?.attributes.title;
 
         return {
@@ -149,7 +157,7 @@ export default async function PropertyDetailPage({ params }: PageProps) {
     const activeLocale: Locale = isLocale(locale) ? locale : 'vi';
     const messages = getMessages(activeLocale);
 
-    const payload = await getPropertyDetail(id);
+    const payload = await getPropertyDetail(id.replace(/[,.]+$/, ''));
     const property = payload.data;
 
     if (!property) {
@@ -203,17 +211,7 @@ export default async function PropertyDetailPage({ params }: PageProps) {
         <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-8 md:px-8 md:py-12">
             <VStack gap={4}>
                 <HStack justify="between" align="center" gap={3} wrap="wrap">
-                    <VStack gap={2}>
-                        <Heading level={2}>{messages.propertyDetailTitle}</Heading>
-                        <ThemeModeToggle
-                            labels={{
-                                system: messages.themeSystem,
-                                light: messages.themeLight,
-                                dark: messages.themeDark,
-                                night: messages.themeNight,
-                            }}
-                        />
-                    </VStack>
+                    <Heading level={2}>{messages.propertyDetailTitle}</Heading>
                     <Button href={`/${activeLocale}`} label={messages.backToList} variant="secondary" />
                 </HStack>
 
@@ -221,17 +219,7 @@ export default async function PropertyDetailPage({ params }: PageProps) {
                     <VStack gap={2}>
                         <Heading level={4}>{messages.photosTitle}</Heading>
                         {imageUrls.length > 0 ? (
-                            <Carousel hasSnap hasButtons hasEdgeFade gap={2} aria-label={messages.photosTitle}>
-                                {imageUrls.map((image) => (
-                                    <img
-                                        key={image.id}
-                                        src={image.url ?? ''}
-                                        alt={attrs.title}
-                                        className="h-72 w-[min(100%,42rem)] shrink-0 rounded-xl object-cover"
-                                        loading="lazy"
-                                    />
-                                ))}
-                            </Carousel>
+                            <PropertyGallery images={imageUrls} title={attrs.title}/>
                         ) : (
                             <Text type="supporting">{messages.updating}</Text>
                         )}
@@ -242,13 +230,17 @@ export default async function PropertyDetailPage({ params }: PageProps) {
                     <VStack gap={3}>
                         <HStack justify="between" align="start" gap={2}>
                             <Heading level={3}>{attrs.title}</Heading>
-                            <Badge
-                                variant={attrs['listing-type'] === 'sale' ? 'success' : 'warning'}
-                                label={attrs['listing-type'] === 'sale' ? messages.listingSale : messages.listingRent}
-                            />
+                            <Link href={`/${activeLocale}?listing_type=${attrs['listing-type']}`}>
+                                <Badge
+                                    variant={attrs['listing-type'] === 'sale' ? 'success' : 'warning'}
+                                    label={attrs['listing-type'] === 'sale' ? messages.listingSale : messages.listingRent}
+                                />
+                            </Link>
                         </HStack>
 
-                        <Text type="supporting">{attrs.description || messages.noDescription}</Text>
+                        <PropertyViewCount propertyId={property.id} initialViews={attrs['view-count'] ?? 0}/>
+
+                        {attrs.description ? <div className="property-description text-zinc-600 dark:text-zinc-300" dangerouslySetInnerHTML={{__html: attrs.description}}/> : <Text type="supporting">{messages.noDescription}</Text>}
 
                         <VStack gap={1}>
                             <Text>
@@ -261,10 +253,7 @@ export default async function PropertyDetailPage({ params }: PageProps) {
                                 <strong>{messages.locationLabel}:</strong> {location || attrs.address || messages.updating}
                             </Text>
                             <Text>
-                                <strong>{messages.statusLabel}:</strong> {attrs.status}
-                            </Text>
-                            <Text>
-                                <strong>{messages.idLabel}:</strong> {property.id}
+                                <strong>{messages.statusLabel}:</strong> {statusLabel(attrs.status,activeLocale)}
                             </Text>
                         </VStack>
                     </VStack>
@@ -288,6 +277,22 @@ export default async function PropertyDetailPage({ params }: PageProps) {
                         )}
                     </VStack>
                 </Card>
+
+                <BookingPanel
+                    locale={activeLocale}
+                    propertyId={property.id}
+                    listingType={attrs['listing-type']}
+                    unitPrice={attrs.price}
+                    priceUnit={attrs['price-unit']}
+                    longTermMonths={attrs['long-term-months']??null}
+                    longTermPrice={attrs['long-term-price']??null}
+                    depositAmount={attrs['deposit-amount']??null}
+                />
+                <ReviewPanel
+                    locale={activeLocale}
+                    propertyId={property.id}
+                    listingType={attrs['listing-type']}
+                />
             </VStack>
         </main>
     );

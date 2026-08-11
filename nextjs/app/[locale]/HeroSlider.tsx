@@ -65,10 +65,14 @@ export default function HeroSlider({ locale }: HeroSliderProps) {
     const searchParamString = searchParams.toString();
 
     useEffect(() => {
-        setKeyword(searchParams.get('q') ?? '');
-        setProvinceCode(searchParams.get('province_code') ?? '');
-        setCityCode(searchParams.get('city_code') ?? '');
-        setPropertyTypeId(searchParams.get('property_type_id') ?? '');
+        const timer=window.setTimeout(()=>{
+            const currentParams=new URLSearchParams(searchParamString);
+            setKeyword(currentParams.get('q') ?? '');
+            setProvinceCode(currentParams.get('province_code') ?? '');
+            setCityCode(currentParams.get('city_code') ?? '');
+            setPropertyTypeId(currentParams.get('property_type_id') ?? '');
+        },0);
+        return()=>window.clearTimeout(timer);
     }, [searchParamString]);
 
     useEffect(() => {
@@ -106,9 +110,8 @@ export default function HeroSlider({ locale }: HeroSliderProps) {
 
     useEffect(() => {
         if (!provinceCode) {
-            setCities([]);
-            setCityCode('');
-            return;
+            const timer=window.setTimeout(()=>{setCities([]);setCityCode('')},0);
+            return()=>window.clearTimeout(timer);
         }
 
         async function loadCities() {
@@ -173,11 +176,11 @@ export default function HeroSlider({ locale }: HeroSliderProps) {
 
     return (
         <VStack gap={3}>
-            <section className="hero-slider-shell relative overflow-hidden rounded-2xl border">
+            <section className="hero-slider-shell relative min-h-[620px] overflow-hidden rounded-2xl border md:min-h-[420px]">
                 <img
                     src={activeSlide.src}
                     alt={activeSlide.title}
-                    className="h-[280px] w-full object-cover md:h-[380px]"
+                    className="absolute inset-0 h-full w-full object-cover"
                     loading="eager"
                 />
 
@@ -249,15 +252,16 @@ export default function HeroSlider({ locale }: HeroSliderProps) {
                             </select>
                         </label>
 
-                        <HStack gap={2} align="center" wrap="wrap">
-                            <Button label={messages.searchButton} variant="primary" type="submit" />
+                        <div className="grid grid-cols-2 gap-2 md:flex md:shrink-0">
+                            <Button className="h-10 min-w-24 whitespace-nowrap" label={messages.searchButton} variant="primary" type="submit" />
                             <Button
+                                className="h-10 min-w-24 whitespace-nowrap !border-white !bg-white !text-zinc-900 hover:!bg-zinc-100"
                                 label={messages.searchResetButton}
                                 variant="secondary"
                                 type="button"
                                 onClick={handleResetFilters}
                             />
-                        </HStack>
+                        </div>
                     </form>
                 </div>
 

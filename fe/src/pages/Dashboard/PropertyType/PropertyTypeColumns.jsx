@@ -1,4 +1,4 @@
-import { Chip } from '@mui/material';
+import { Box, Chip } from '@mui/material';
 
 const getColumns = (t) => [
     {
@@ -14,6 +14,13 @@ const getColumns = (t) => [
             const indexInPage = params.api.getRowIndexRelativeToVisibleRows(params.id) + 1;
             return page * pageSize + indexInPage;
         },
+    },
+    {
+        field: 'icon',
+        headerName: 'Icon',
+        width: 100,
+        sortable: false,
+        renderCell: (params) => params.value ? <Box component="img" src={params.value} alt={params.row.name} sx={{ width: 48, height: 48, objectFit: 'contain', borderRadius: 1 }} /> : '—',
     },
     {
         field: 'name',

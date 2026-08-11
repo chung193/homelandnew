@@ -18,8 +18,7 @@ class UserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        // Try to get avatar from attribute first (set by service), then from media
-        $avatar = $this->avatar ?? $this->getFirstMediaUrl('avatar', 'thumb') ?? null;
+        $avatar = $this->getFirstMediaUrl('avatar', 'thumb') ?: null;
 
         return [
             'id' => $this->id,
@@ -28,6 +27,10 @@ class UserResource extends JsonResource
             'avatar' => $avatar,
             'is_active' => $this->is_active,
             'registration_source' => $this->registration_source,
+            'account_type' => $this->account_type,
+            'wallet_balance' => (int) $this->wallet_balance,
+            'test_posting_credits' => (int) $this->test_posting_credits,
+            'detail' => DetailResource::make($this->whenLoaded('detail')),
             'email_verified_at' => $this->email_verified_at,
             'is_verified' => $this->hasVerifiedEmail(),
             'created_at' => $this->created_at,

@@ -23,8 +23,18 @@ export async function GET(request: Request) {
         targetUrl = `${API_BASE_URL}/locations/districts?province_code=${encodeURIComponent(provinceCode)}`;
     }
 
+    if (type === 'wards') {
+        const districtCode = searchParams.get('district_code');
+        if (!districtCode) return NextResponse.json({ error: 'district_code is required' }, { status: 422 });
+        targetUrl = `${API_BASE_URL}/locations/wards?district_code=${encodeURIComponent(districtCode)}`;
+    }
+
     if (type === 'property-types') {
         targetUrl = `${API_BASE_URL}/v1/property-types/active`;
+    }
+
+    if (type === 'amenities') {
+        targetUrl = `${API_BASE_URL}/v1/amenities/active`;
     }
 
     if (!targetUrl) {

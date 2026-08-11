@@ -2,32 +2,32 @@
 
 namespace App\Models;
 
-use Eloquent;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\DatabaseNotification;
-use Illuminate\Notifications\DatabaseNotificationCollection;
-use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Carbon;
-use Spatie\Permission\Traits\HasRoles;
-use Tymon\JWTAuth\Contracts\JWTSubject;
+use App\Notifications\VerifyEmailNotification;
 use App\Traits\HasMediaImageConversions;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
-use App\Notifications\VerifyEmailNotification;
+use Spatie\Permission\Traits\HasRoles;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable implements JWTSubject, HasMedia, MustVerifyEmail
+class User extends Authenticatable implements HasMedia, JWTSubject, MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, HasRoles, Notifiable;
 
-    use InteractsWithMedia, HasMediaImageConversions {
+    use HasMediaImageConversions, InteractsWithMedia {
         HasMediaImageConversions::registerMediaConversions insteadof InteractsWithMedia;
     }
+
     protected $keyType = 'int';
+
     protected $primaryKey = 'id';
+
     /**
      * The attributes that are mass assignable.
      *
@@ -39,6 +39,10 @@ class User extends Authenticatable implements JWTSubject, HasMedia, MustVerifyEm
         'password',
         'is_active',
         'registration_source',
+        'account_type',
+        'wallet_balance',
+        'test_posting_credits',
+        'auth_version',
     ];
 
     /**
@@ -62,6 +66,9 @@ class User extends Authenticatable implements JWTSubject, HasMedia, MustVerifyEm
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'wallet_balance' => 'integer',
+            'test_posting_credits' => 'integer',
+            'auth_version' => 'integer',
         ];
     }
 
@@ -80,7 +87,7 @@ class User extends Authenticatable implements JWTSubject, HasMedia, MustVerifyEm
      */
     public function getJWTCustomClaims(): array
     {
-        return [];
+        return ['auth_version' => (int) $this->auth_version];
     }
 
     public function registerMediaCollections(): void
@@ -98,15 +105,25 @@ class User extends Authenticatable implements JWTSubject, HasMedia, MustVerifyEm
         return $this->hasMany(Property::class);
     }
 
+    public function bookings(): HasMany
+    {
+        return $this->hasMany(Booking::class, 'customer_id');
+    }
+
+    public function ownerApplication(): HasOne
+    {
+        return $this->hasOne(OwnerApplication::class);
+    }
+
     public function sendEmailVerificationNotification()
     {
-        $this->notify(new VerifyEmailNotification());
+        $this->notify(new VerifyEmailNotification);
     }
 
     public function isAdmin(): bool
     {
         return $this->getRoleNames()
-            ->map(fn(string $role) => strtolower(trim($role)))
+            ->map(fn (string $role) => strtolower(trim($role)))
             ->intersect(['admin', 'super-admin', 'super admin'])
             ->isNotEmpty();
     }

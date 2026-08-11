@@ -10,14 +10,32 @@ import { bulkDestroy, getAll, storage, update } from './PropertyServices';
 import getColumns from './PropertyColumns';
 import { getBreadcrumbs } from './PropertyBreadcrumb';
 import PropertyAddModal from './PropertyAddModal';
+import { Button, FormControl, InputLabel, MenuItem, Select, Stack } from '@mui/material';
+import { getPropertyTypes } from './PropertyServices';
+import { useNavigate } from 'react-router-dom';
 
 const STORAGE_KEY = 'list-view-options:property';
 
 const Property = () => {
     const { showLoading, hideLoading, showNotification, openModal, closeModal, showConfirm, closeConfirm } = useGlobalContext();
     const { t } = useTranslation('dashboard');
+    const navigate = useNavigate();
     const breadcrumbs = getBreadcrumbs(t);
-    const columns = useMemo(() => getColumns(t), [t]);
+    const [statusFilter, setStatusFilter] = useState('');
+    const [listingTypeFilter, setListingTypeFilter] = useState('');
+    const [propertyTypeFilter, setPropertyTypeFilter] = useState('');
+    const [propertyTypes, setPropertyTypes] = useState([]);
+    const review = async (row, approved) => {
+        showLoading();
+        try {
+            await update(row.id, { status: approved ? 'published' : 'archived', is_active: approved });
+            setRows((current) => current.map((item) => item.id === row.id ? { ...item, status: approved ? 'published' : 'archived', is_active: approved } : item));
+            showNotification(approved ? 'Đã duyệt và xuất bản tin' : 'Đã từ chối tin', 'success');
+        } catch (err) {
+            showNotification(err.response?.data?.message || 'Không thể cập nhật trạng thái tin', 'error');
+        } finally { hideLoading(); }
+    };
+    const columns = useMemo(() => getColumns(t, (row) => review(row, true), (row) => review(row, false), (row) => navigate(`/dashboard/property/${row.id}`)), [t, navigate]);
     const showOptionColumns = useMemo(
         () => columns.filter((column) => Boolean(column.field)).map((column) => ({
             field: column.field,
@@ -38,8 +56,12 @@ const Property = () => {
     const [keyword, setKeyword] = useState('');
 
     useEffect(() => {
+        getPropertyTypes().then((res) => setPropertyTypes(res.data.data || [])).catch(() => setPropertyTypes([]));
+    }, []);
+
+    useEffect(() => {
         loadData();
-    }, [paginationModel, keyword]);
+    }, [paginationModel, keyword, statusFilter, listingTypeFilter, propertyTypeFilter]);
 
     useEffect(() => {
         saveListViewOptions(STORAGE_KEY, { columnVisibilityModel, pageSize: paginationModel.pageSize, viewMode });
@@ -48,7 +70,7 @@ const Property = () => {
     const loadData = async () => {
         showLoading();
         try {
-            const res = await getAll({ page: paginationModel.page + 1, per_page: paginationModel.pageSize, keyword });
+            const res = await getAll({ page: paginationModel.page + 1, per_page: paginationModel.pageSize, keyword, status: statusFilter, listingType: listingTypeFilter, propertyTypeId: propertyTypeFilter });
             setRows(res.data.data || []);
             setRowCount(res.data.meta?.total || 0);
             setSelectedRows(new Set());
@@ -120,12 +142,20 @@ const Property = () => {
                 handleViewModeChange={setViewMode}
             />
 
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 2 }}>
+                <FormControl size="small" sx={{ minWidth: 180 }}><InputLabel>Trạng thái duyệt</InputLabel><Select value={statusFilter} label="Trạng thái duyệt" onChange={(event) => { setStatusFilter(event.target.value); setPaginationModel((prev) => ({ ...prev, page: 0 })); }}><MenuItem value="">Tất cả trạng thái</MenuItem><MenuItem value="pending">Chờ duyệt</MenuItem><MenuItem value="published">Đã duyệt</MenuItem><MenuItem value="archived">Đã từ chối/lưu trữ</MenuItem><MenuItem value="draft">Bản nháp</MenuItem><MenuItem value="sold">Đã bán</MenuItem><MenuItem value="rented">Đã thuê</MenuItem></Select></FormControl>
+                <FormControl size="small" sx={{ minWidth: 160 }}><InputLabel>Hình thức</InputLabel><Select value={listingTypeFilter} label="Hình thức" onChange={(event) => { setListingTypeFilter(event.target.value); setPaginationModel((prev) => ({ ...prev, page: 0 })); }}><MenuItem value="">Tất cả</MenuItem><MenuItem value="sale">Bán</MenuItem><MenuItem value="rent">Cho thuê</MenuItem></Select></FormControl>
+                <FormControl size="small" sx={{ minWidth: 220 }}><InputLabel>Loại bất động sản</InputLabel><Select value={propertyTypeFilter} label="Loại bất động sản" onChange={(event) => { setPropertyTypeFilter(event.target.value); setPaginationModel((prev) => ({ ...prev, page: 0 })); }}><MenuItem value="">Tất cả loại</MenuItem>{propertyTypes.map((item) => <MenuItem key={item.id} value={item.id}>{item.name}</MenuItem>)}</Select></FormControl>
+                <Button variant="text" onClick={() => { setStatusFilter(''); setListingTypeFilter(''); setPropertyTypeFilter(''); setKeyword(''); setPaginationModel((prev) => ({ ...prev, page: 0 })); }}>Xóa bộ lọc</Button>
+            </Stack>
+
             <DataGrid
                 rows={rows}
                 columns={columns}
                 getRowId={(row) => row.id}
                 checkboxSelection
                 disableRowSelectionOnClick
+                onRowDoubleClick={(params) => navigate(`/dashboard/property/${params.row.id}`)}
                 onRowSelectionModelChange={(newSelection) => setSelectedRows(new Set(newSelection.ids))}
                 pagination
                 paginationMode="server"

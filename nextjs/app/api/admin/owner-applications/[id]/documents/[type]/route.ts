@@ -1,0 +1,3 @@
+import { NextResponse } from 'next/server';
+const API=process.env.BE_API_URL??process.env.NEXT_PUBLIC_BE_API_URL??'http://127.0.0.1:8000/api'; type C={params:Promise<{id:string;type:string}>};
+export async function GET(request:Request,{params}:C){const {id,type}=await params;const r=await fetch(`${API}/v1/admin/owner-applications/${id}/documents/${type}`,{headers:{Authorization:request.headers.get('authorization')??''},cache:'no-store'});if(!r.ok)return NextResponse.json({error:'Cannot load document.'},{status:r.status});return new NextResponse(r.body,{status:200,headers:{'Content-Type':r.headers.get('content-type')??'application/octet-stream','Content-Disposition':r.headers.get('content-disposition')??'inline'}})}

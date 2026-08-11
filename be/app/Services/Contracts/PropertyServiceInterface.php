@@ -25,4 +25,10 @@ interface PropertyServiceInterface extends BaseServiceInterface
     public function deleteProperty(int $id): bool;
 
     public function deleteProperties(array $ids): int;
+
+    public function getPublicProperties(Request $request, int $perPage = 12): LengthAwarePaginator;
+
+    public function getPublicProperty(int $id): \App\Models\Property;
+
+    public function recordView(int $id): int;
 }

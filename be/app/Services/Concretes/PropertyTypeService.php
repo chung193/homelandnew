@@ -49,12 +49,17 @@ class PropertyTypeService extends BaseService implements PropertyTypeServiceInte
         $data['is_active'] = $data['is_active'] ?? true;
 
         $amenityIds = $data['amenity_ids'] ?? null;
+        $icon = $data['icon'] ?? null;
         unset($data['amenity_ids']);
+        unset($data['icon']);
 
         $propertyType = $this->repository->create($data);
 
         if ($amenityIds !== null) {
             $propertyType->amenities()->sync($amenityIds);
+        }
+        if ($icon) {
+            $propertyType->addMedia($icon)->toMediaCollection('icon');
         }
 
         $propertyType->load('amenities');
@@ -65,12 +70,17 @@ class PropertyTypeService extends BaseService implements PropertyTypeServiceInte
     public function updatePropertyType(int $id, array $data): Model
     {
         $amenityIds = $data['amenity_ids'] ?? null;
+        $icon = $data['icon'] ?? null;
         unset($data['amenity_ids']);
+        unset($data['icon']);
 
         $propertyType = $this->repository->update($id, $data);
 
         if ($amenityIds !== null) {
             $propertyType->amenities()->sync($amenityIds);
+        }
+        if ($icon) {
+            $propertyType->addMedia($icon)->toMediaCollection('icon');
         }
 
         $propertyType->load('amenities');

@@ -6,9 +6,7 @@ import { HStack } from '@astryxdesign/core/HStack';
 import { Text } from '@astryxdesign/core/Text';
 import { VStack } from '@astryxdesign/core/VStack';
 import HeroSlider from './HeroSlider';
-import LocaleSwitchButton from './LocaleSwitchButton';
 import PropertyInfiniteList from './PropertyInfiniteList';
-import ThemeModeToggle from './ThemeModeToggle';
 import { getMessages } from '../../i18n/messages';
 import { isLocale, locales, type Locale } from '../../i18n/config';
 
@@ -52,6 +50,7 @@ type PageProps = {
         province_code?: string;
         city_code?: string;
         property_type_id?: string;
+        listing_type?: string;
     }>;
 };
 
@@ -98,7 +97,7 @@ async function getPropertiesPage(
 
 export default async function LocaleHomePage({ params, searchParams }: PageProps) {
     const { locale } = await params;
-    const { page, q, province_code, city_code, property_type_id } = await searchParams;
+    const { page, q, province_code, city_code, property_type_id, listing_type } = await searchParams;
     const activeLocale: Locale = isLocale(locale) ? locale : 'vi';
     const messages = getMessages(activeLocale);
     const requestedPage = Number(page ?? '1');
@@ -116,6 +115,9 @@ export default async function LocaleHomePage({ params, searchParams }: PageProps
     }
     if (property_type_id) {
         filterParams.set('property_type_id', property_type_id);
+    }
+    if (listing_type === 'sale' || listing_type === 'rent') {
+        filterParams.set('listing_type', listing_type);
     }
 
     let properties: PropertyItem[] = [];
@@ -154,28 +156,14 @@ export default async function LocaleHomePage({ params, searchParams }: PageProps
 
     return (
         <>
-            <div className="topbar-shell fixed inset-x-0 top-0 z-50 border-b backdrop-blur">
-                <div className="mx-auto flex w-full max-w-7xl items-center justify-end gap-2 px-4 py-3 md:px-8">
-                    <LocaleSwitchButton currentLocale={activeLocale} />
-                    <ThemeModeToggle
-                        labels={{
-                            system: messages.themeSystem,
-                            light: messages.themeLight,
-                            dark: messages.themeDark,
-                            night: messages.themeNight,
-                        }}
-                    />
-                </div>
-            </div>
-
-            <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 pb-8 pt-24 md:px-8 md:pb-12 md:pt-28">
+            <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 py-8 md:px-8 md:py-12">
                 <VStack gap={4}>
                     <HeroSlider locale={activeLocale} />
 
                     <HStack justify="between" align="center" gap={3} wrap="wrap">
                         <VStack gap={1}>
                             <Heading level={1}>{messages.heroTitle}</Heading>
-                            <Text type="supporting">{messages.heroSubtitle}</Text>
+                            {messages.heroSubtitle ? <Text type="supporting">{messages.heroSubtitle}</Text> : null}
                         </VStack>
 
                         <Badge variant="info" label={`${messages.totalLabel}: ${total}`} />

@@ -16,4 +16,10 @@ interface PropertyRepositoryInterface extends QueryableRepositoryInterface
     public function getFilteredProperties(?Request $request = null, int $perPage = 15): LengthAwarePaginator;
 
     public function bulkDelete(array $ids): int;
+
+    public function getPublicProperties(Request $request, int $perPage = 12): LengthAwarePaginator;
+
+    public function findPublicProperty(int $id): \App\Models\Property;
+
+    public function incrementViews(int $id): int;
 }

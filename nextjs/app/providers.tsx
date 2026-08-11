@@ -35,10 +35,11 @@ export function Providers({ children }: ProvidersProps) {
     const [mode, setMode] = useState<UIMode>('system');
 
     useEffect(() => {
-        const stored = window.localStorage.getItem(STORAGE_KEY);
-        if (stored === 'system' || stored === 'light' || stored === 'dark' || stored === 'night') {
-            setMode(stored);
-        }
+        const timer=window.setTimeout(()=>{
+            const stored = window.localStorage.getItem(STORAGE_KEY);
+            if (stored === 'system' || stored === 'light' || stored === 'dark' || stored === 'night') setMode(stored);
+        },0);
+        return()=>window.clearTimeout(timer);
     }, []);
 
     useEffect(() => {

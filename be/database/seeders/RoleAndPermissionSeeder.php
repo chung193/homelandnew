@@ -27,6 +27,11 @@ class RoleAndPermissionSeeder extends Seeder
             ['description' => 'Client role with limited access']
         );
 
+        Role::firstOrCreate(
+            ['name' => 'property_owner', 'guard_name' => 'api'],
+            ['description' => 'Verified property owner']
+        );
+
         $staffRole = Role::firstOrCreate(
             ['name' => 'staff', 'guard_name' => 'api'],
             ['description' => 'Staff role with operational access']

@@ -10,9 +10,11 @@ import { Skeleton } from '@astryxdesign/core/Skeleton';
 import { Text } from '@astryxdesign/core/Text';
 import { VStack } from '@astryxdesign/core/VStack';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { getMessages } from '../../i18n/messages';
 import type { Locale } from '../../i18n/config';
 import { getCustomerToken } from '../../lib/auth';
+import {statusLabel} from '../../lib/displayLabels';
 
 type PropertyAttributes = {
     title: string;
@@ -27,6 +29,7 @@ type PropertyAttributes = {
     'listing-type': string;
     'price-unit': string;
     'featured-image'?: string | null;
+    'view-count'?: number;
 };
 
 type PropertyItem = {
@@ -212,32 +215,37 @@ export default function PropertyInfiniteList({
                     .join(', ');
 
                 return (
-                    <Card key={property.id} variant="default" padding={4} elevation="low">
-                        <VStack gap={3}>
-                            {attrs['featured-image'] ? (
+                    <Card key={property.id} variant="default" padding={0} elevation="low" className="overflow-hidden">
+                        <VStack gap={0}>
+                            <Link href={`/${locale}/property/${property.id}`} className="block overflow-hidden">
                                 <img
-                                    src={attrs['featured-image']}
-                                    alt={attrs.title}
-                                    className="h-48 w-full rounded-xl object-cover"
+                                    src={attrs['featured-image'] || '/images/no-image-property.svg'}
+                                    alt={attrs['featured-image'] ? attrs.title : messages.noDescription}
+                                    className="h-56 w-full object-cover transition-transform duration-300 hover:scale-[1.02]"
                                     loading="lazy"
                                 />
-                            ) : null}
+                            </Link>
+
+                            <div className="p-4">
+                            <VStack gap={3}>
 
                             <HStack justify="between" align="start" gap={2}>
-                                <Heading level={4}>{attrs.title}</Heading>
-                                <Badge
-                                    variant={attrs['listing-type'] === 'sale' ? 'success' : 'warning'}
-                                    label={attrs['listing-type'] === 'sale' ? messages.listingSale : messages.listingRent}
-                                />
+                                <Link href={`/${locale}/property/${property.id}`} className="transition-colors hover:text-emerald-600 dark:hover:text-emerald-400">
+                                    <Heading level={3}>{attrs.title}</Heading>
+                                </Link>
+                                <Link href={`/${locale}?listing_type=${attrs['listing-type']}`} aria-label={`${attrs['listing-type'] === 'sale' ? messages.listingSale : messages.listingRent}: ${attrs.title}`}>
+                                    <Badge
+                                        variant={attrs['listing-type'] === 'sale' ? 'success' : 'warning'}
+                                        label={attrs['listing-type'] === 'sale' ? messages.listingSale : messages.listingRent}
+                                    />
+                                </Link>
                             </HStack>
 
                             <Text type="supporting">{attrs.description || messages.noDescription}</Text>
 
+                            <Text type="supporting">👁 {Number(attrs['view-count'] ?? 0).toLocaleString('vi-VN')} lượt xem</Text>
+
                             <VStack gap={1}>
-                                <Text>
-                                    <strong>{messages.priceLabel}:</strong>{' '}
-                                    {formatPrice(locale, attrs.price, attrs['price-unit'])}
-                                </Text>
                                 <Text>
                                     <strong>{messages.areaLabel}:</strong> {formatArea(locale, attrs.area)}
                                 </Text>
@@ -246,9 +254,13 @@ export default function PropertyInfiniteList({
                                     {location || attrs.address || messages.updating}
                                 </Text>
                                 <Text>
-                                    <strong>{messages.statusLabel}:</strong> {attrs.status}
+                                    <strong>{messages.statusLabel}:</strong> {statusLabel(attrs.status,locale)}
                                 </Text>
                             </VStack>
+
+                            <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
+                                {formatPrice(locale, attrs.price, attrs['price-unit'])}
+                            </div>
 
                             <HStack justify="between" align="center" gap={2} wrap="wrap">
                                 <Button
@@ -275,10 +287,9 @@ export default function PropertyInfiniteList({
                                         );
                                     }}
                                 />
-                                <Text type="supporting">
-                                    {messages.idLabel}: {property.id}
-                                </Text>
                             </HStack>
+                            </VStack>
+                            </div>
                         </VStack>
                     </Card>
                 );

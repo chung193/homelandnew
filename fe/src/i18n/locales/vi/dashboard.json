@@ -325,8 +325,8 @@
         "property": {
             "deleteConfirmTitle": "Xác nhận xóa tài sản",
             "deleteConfirmMessage": "Bạn có chắc chắn muốn xóa {{count}} tài sản này không?",
-            "title": "Quản lý tài sản",
-            "description": "Quản lý tài sản bất động sản",
+            "title": "Duyệt và quản lý tin bất động sản",
+            "description": "Xét duyệt tin do chủ bất động sản gửi và quản lý các tin đã đăng",
             "addProperty": "Thêm tài sản mới",
             "table": {
                 "stt": "STT",

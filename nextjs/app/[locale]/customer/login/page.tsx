@@ -11,6 +11,7 @@ import { VStack } from '@astryxdesign/core/VStack';
 import { getMessages } from '../../../../i18n/messages';
 import { isLocale, type Locale } from '../../../../i18n/config';
 import { setCustomerSession } from '../../../../lib/auth';
+import type { CustomerUser } from '../../../../lib/auth';
 
 type LoginPayload = {
     email: string;
@@ -20,7 +21,7 @@ type LoginPayload = {
 type LoginResponse = {
     data?: {
         token?: string;
-        user?: unknown;
+        user?: CustomerUser;
     };
     error?: string;
 };

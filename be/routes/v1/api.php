@@ -1,32 +1,35 @@
 <?php
 
-use App\Http\Controllers\Api\V1\AuthController;
-use App\Http\Controllers\Api\V1\UserController;
-use App\Http\Controllers\Api\V1\RoleController;
-use App\Http\Controllers\Api\V1\PermissionController;
-use App\Http\Controllers\Api\V1\CategoryController;
-use App\Http\Controllers\Api\V1\TagController;
-use App\Http\Controllers\Api\V1\PostController;
-use App\Http\Controllers\Api\V1\CommentController;
-use App\Http\Controllers\Api\V1\PageController;
-use App\Http\Controllers\Api\V1\MediaController;
-use App\Http\Controllers\Api\V1\PropertyController;
-use App\Http\Controllers\Api\V1\PropertyTypeController;
 use App\Http\Controllers\Api\V1\AmenityController;
-use App\Http\Controllers\Api\V1\StatisticsController;
-use App\Http\Controllers\Api\V1\SearchController;
-use App\Http\Controllers\Api\V1\UploadFileController;
-use App\Http\Controllers\Api\V1\LocationController;
-use App\Http\Controllers\Api\V1\ProvinceController;
+use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\BookingController;
+use App\Http\Controllers\Api\V1\CategoryController;
+use App\Http\Controllers\Api\V1\Client\CategoryController as ClientCategoryController;
+use App\Http\Controllers\Api\V1\Client\CommentController as ClientCommentController;
+use App\Http\Controllers\Api\V1\Client\PostController as ClientPostController;
+use App\Http\Controllers\Api\V1\Client\TagController as ClientTagController;
+use App\Http\Controllers\Api\V1\CommentController;
 use App\Http\Controllers\Api\V1\DistrictController;
+use App\Http\Controllers\Api\V1\LocationController;
+use App\Http\Controllers\Api\V1\MediaController;
+use App\Http\Controllers\Api\V1\OwnerApplicationController;
+use App\Http\Controllers\Api\V1\PageController;
+use App\Http\Controllers\Api\V1\PermissionController;
+use App\Http\Controllers\Api\V1\PostController;
+use App\Http\Controllers\Api\V1\PropertyController;
+use App\Http\Controllers\Api\V1\PropertyReviewController;
+use App\Http\Controllers\Api\V1\PropertyTypeController;
+use App\Http\Controllers\Api\V1\ProvinceController;
+use App\Http\Controllers\Api\V1\RoleController;
+use App\Http\Controllers\Api\V1\SearchController;
+use App\Http\Controllers\Api\V1\StatisticsController;
+use App\Http\Controllers\Api\V1\TagController;
+use App\Http\Controllers\Api\V1\UploadFileController;
+// client
+use App\Http\Controllers\Api\V1\UserController;
+use App\Http\Controllers\Api\V1\WalletController;
 use App\Http\Controllers\Api\V1\WardController;
 use Illuminate\Support\Facades\Route;
-
-// client
-use App\Http\Controllers\Api\V1\Client\CategoryController as ClientCategoryController;
-use App\Http\Controllers\Api\V1\Client\PostController as ClientPostController;
-use App\Http\Controllers\Api\V1\Client\CommentController as ClientCommentController;
-use App\Http\Controllers\Api\V1\Client\TagController as ClientTagController;
 
 /*
 |--------------------------------------------------------------------------
@@ -85,9 +88,9 @@ Route::name('auth.')
         Route::post('forgot', [AuthController::class, 'forgot'])->name('forgot');
         Route::post('reset-password', [AuthController::class, 'reset'])->name('reset');
         Route::get('email/verify/{id}/{hash}', [AuthController::class, 'verify'])->name('verify.email')->middleware('signed');
-        Route::post('email/resend', [AuthController::class, 'resend'])->name('resend.verify.email');
+        Route::post('email/resend', [AuthController::class, 'resend'])->middleware(['auth:api', 'account.active'])->name('resend.verify.email');
         // Protected routes
-        Route::group(['middleware' => 'auth:api'], function () {
+        Route::group(['middleware' => ['auth:api', 'account.active']], function () {
             Route::get('me', [AuthController::class, 'me'])->name('me');
             Route::put('me', [AuthController::class, 'updateProfile'])->name('me.update');
             Route::patch('change-password', [AuthController::class, 'changePassword'])->name('change-password');
@@ -102,8 +105,31 @@ Route::get('/property-types/all', [PropertyTypeController::class, 'all'])->name(
 Route::get('/property-types/active', [PropertyTypeController::class, 'active'])->name('property-types.active');
 Route::get('/amenities/all', [AmenityController::class, 'all'])->name('amenities.all');
 Route::get('/amenities/active', [AmenityController::class, 'active'])->name('amenities.active');
+Route::get('/properties/{property}/availability', [BookingController::class, 'availability'])->name('properties.availability');
+Route::get('/properties/{property}/reviews', [PropertyReviewController::class, 'index'])->name('properties.reviews.index');
+Route::post('/payments/momo/ipn', [WalletController::class, 'momoIpn'])->name('payments.momo.ipn');
 
-Route::group(['middleware' => 'auth:api'], function () {
+Route::group(['middleware' => ['auth:api', 'account.active']], function () {
+    Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
+    Route::post('/properties/{property}/reviews', [PropertyReviewController::class, 'store'])->name('properties.reviews.store');
+    Route::get('/properties/{property}/review-eligibility', [PropertyReviewController::class, 'eligibility'])->name('properties.reviews.eligibility');
+    Route::get('/owner-application', [OwnerApplicationController::class, 'show'])->name('owner-application.show');
+    Route::post('/owner-application', [OwnerApplicationController::class, 'store'])->name('owner-application.store');
+    Route::get('/admin/owner-applications', [OwnerApplicationController::class, 'index'])->name('owner-applications.index');
+    Route::get('/admin/owner-applications/{application}', [OwnerApplicationController::class, 'adminShow'])->name('owner-applications.show');
+    Route::patch('/admin/owner-applications/{application}', [OwnerApplicationController::class, 'review'])->name('owner-applications.review');
+    Route::patch('/admin/owner-applications/{application}/test-posting-credits', [OwnerApplicationController::class, 'setTestPostingCredits'])->name('owner-applications.test-posting-credits');
+    Route::get('/admin/owner-applications/{application}/documents/{type}', [OwnerApplicationController::class, 'document'])->name('owner-applications.document');
+    Route::get('/wallet', [WalletController::class, 'show'])->name('wallet.show');
+    Route::post('/wallet/momo', [WalletController::class, 'createMomoPayment'])->name('wallet.momo.create');
+    Route::get('/my-bookings', [BookingController::class, 'myBookings'])->name('bookings.mine');
+    Route::get('/owner/bookings', [BookingController::class, 'ownerBookings'])->name('bookings.owner');
+    Route::patch('/bookings/{booking}/cancel', [BookingController::class, 'cancel'])->name('bookings.cancel');
+    Route::patch('/bookings/{booking}/approve', [BookingController::class, 'approve'])->name('bookings.approve');
+    Route::patch('/bookings/{booking}/reject', [BookingController::class, 'reject'])->name('bookings.reject');
+    Route::patch('/bookings/{booking}/start', [BookingController::class, 'start'])->name('bookings.start');
+    Route::patch('/bookings/{booking}/complete', [BookingController::class, 'complete'])->name('bookings.complete');
+
     // Statistics routes
     Route::get('/statistics/dashboard', [StatisticsController::class, 'dashboard'])->name('statistics.dashboard');
     Route::get('/statistics/monthly-trends', [StatisticsController::class, 'monthlyTrends'])->name('statistics.monthly-trends');
@@ -113,6 +139,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::apiResource('user', UserController::class)->names('users');
     Route::delete('users', [UserController::class, 'bulkDestroy'])->name('users.bulk_destroy');
     Route::post('/user/{user}/role', [UserController::class, 'assignRoles'])->name('user.assign_roles');
+    Route::patch('/user/{user}/force-logout', [UserController::class, 'forceLogout'])->name('user.force_logout');
     Route::post('/user-export', [UserController::class, 'export'])->name('users.export');
 
     Route::post('/media/upload', [UploadFileController::class, 'upload']);

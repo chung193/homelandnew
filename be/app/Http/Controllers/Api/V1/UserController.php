@@ -2,19 +2,17 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Exports\UserExport;
 use App\Http\Controllers\Api\BaseApiController;
-use App\Http\Requests\Api\V1\UserStoreRequest;
-use App\Http\Requests\Api\V1\UserUpdateRequest;
-use App\Http\Requests\Api\V1\UserDetailUpdateRequest;
-use App\Http\Resources\Api\User\UserResource;
-use App\Http\Resources\Api\User\UserWithRoleResource;
-use App\Http\Resources\Api\User\UserWithDetailRoleResource;
 use App\Http\Requests\Api\V1\AssignUserRolesRequest;
-use App\Services\Contracts\UserServiceInterface;
+use App\Http\Requests\Api\V1\UserDetailUpdateRequest;
+use App\Http\Requests\Api\V1\UserStoreRequest;
+use App\Http\Resources\Api\User\UserResource;
+use App\Http\Resources\Api\User\UserWithDetailRoleResource;
 use App\Models\User;
+use App\Services\Contracts\UserServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use App\Exports\UserExport;
 use Maatwebsite\Excel\Facades\Excel;
 
 class UserController extends BaseApiController
@@ -32,6 +30,7 @@ class UserController extends BaseApiController
     public function index(): JsonResponse
     {
         $users = $this->userService->getFilteredUsers(request());
+
         return $this->successResponse(UserWithDetailRoleResource::collection($users));
     }
 
@@ -51,6 +50,7 @@ class UserController extends BaseApiController
     public function show(int $id): JsonResponse
     {
         $user = $this->userService->getUserById($id);
+
         return $this->successResponse(new UserWithDetailRoleResource($user));
     }
 
@@ -60,6 +60,7 @@ class UserController extends BaseApiController
     public function store(UserStoreRequest $request): JsonResponse
     {
         $user = $this->userService->createUser($request->validated());
+
         return $this->createdResponse(new UserResource($user));
     }
 
@@ -69,6 +70,7 @@ class UserController extends BaseApiController
     public function update(UserDetailUpdateRequest $request, int $id): JsonResponse
     {
         $user = $this->userService->updateUser($id, $request->validated());
+
         return $this->successResponse(new UserResource($user));
     }
 
@@ -81,7 +83,8 @@ class UserController extends BaseApiController
         if ($bool) {
             return $this->successResponse(['message' => 'User deleted successfully']);
         }
-        return $this->errorMessage("Error deleting user", 500);
+
+        return $this->errorMessage('Error deleting user', 500);
     }
 
     /**
@@ -97,7 +100,7 @@ class UserController extends BaseApiController
         $count = $this->userService->deleteUsers($validated['ids']);
 
         return $this->successResponse([
-            'message' => "Deleted {$count} users successfully"
+            'message' => "Deleted {$count} users successfully",
         ]);
     }
 
@@ -113,7 +116,7 @@ class UserController extends BaseApiController
 
     public function export()
     {
-        return Excel::download(new UserExport(), 'users.xlsx');
+        return Excel::download(new UserExport, 'users.xlsx');
     }
 
     public function assignRoles(int $id, AssignUserRolesRequest $request)
@@ -125,5 +128,13 @@ class UserController extends BaseApiController
             'success' => true,
             'data' => $user->load('roles'),
         ]);
+    }
+
+    public function forceLogout(Request $request, int $id): JsonResponse
+    {
+        abort_unless($request->user()?->isAdmin(), 403);
+        $this->userService->forceLogout($id);
+
+        return $this->successResponse(['message' => 'Đã buộc tài khoản đăng xuất trên tất cả thiết bị.']);
     }
 }

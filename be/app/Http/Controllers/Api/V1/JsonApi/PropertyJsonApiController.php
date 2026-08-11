@@ -3,62 +3,17 @@
 namespace App\Http\Controllers\Api\V1\JsonApi;
 
 use App\Http\Controllers\Api\BaseApiController;
-use App\Models\District;
 use App\Models\Property;
-use App\Models\Province;
+use App\Services\Contracts\PropertyServiceInterface;
 use Illuminate\Http\Request;
 
 class PropertyJsonApiController extends BaseApiController
 {
+    public function __construct(private readonly PropertyServiceInterface $propertyService) {}
+
     public function index(Request $request)
     {
-        $query = Property::query()
-            ->with(['propertyType', 'amenities', 'media'])
-            ->where('is_active', true)
-            ->where('is_deleted', false);
-
-        $search = trim((string) $request->input('q', ''));
-        if ($search !== '') {
-            $query->where(function ($builder) use ($search) {
-                $builder->where('title', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%")
-                    ->orWhere('address', 'like', "%{$search}%")
-                    ->orWhere('city', 'like', "%{$search}%")
-                    ->orWhere('district', 'like', "%{$search}%")
-                    ->orWhere('ward', 'like', "%{$search}%");
-            });
-        }
-
-        $propertyTypeId = (int) $request->input('property_type_id', 0);
-        if ($propertyTypeId > 0) {
-            $query->where('property_type_id', $propertyTypeId);
-        }
-
-        $provinceCode = (int) $request->input('province_code', 0);
-        if ($provinceCode > 0) {
-            $province = Province::query()
-                ->where('code', $provinceCode)
-                ->orWhere('id', $provinceCode)
-                ->first();
-
-            if ($province) {
-                $query->where('city', 'like', "%{$province->name}%");
-            }
-        }
-
-        $cityCode = (int) $request->input('city_code', 0);
-        if ($cityCode > 0) {
-            $district = District::query()
-                ->where('code', $cityCode)
-                ->orWhere('id', $cityCode)
-                ->first();
-
-            if ($district) {
-                $query->where('district', 'like', "%{$district->name}%");
-            }
-        }
-
-        $properties = $query->paginate(12);
+        $properties = $this->propertyService->getPublicProperties($request, 12);
 
         return response()->json([
             'jsonapi' => ['version' => '1.0'],
@@ -81,8 +36,12 @@ class PropertyJsonApiController extends BaseApiController
                         'ward' => $property->ward,
                         'price' => $property->price,
                         'price-unit' => $property->price_unit,
+                        'long-term-months' => $property->long_term_months,
+                        'long-term-price' => $property->long_term_price,
+                        'deposit-amount' => $property->deposit_amount,
                         'area' => $property->area,
                         'status' => $property->status,
+                        'view-count' => (int) $property->views,
                         'featured-image' => $representativeImage ?: null,
                     ],
                     'relationships' => [
@@ -93,7 +52,7 @@ class PropertyJsonApiController extends BaseApiController
                             ],
                         ],
                         'amenities' => [
-                            'data' => $property->amenities->map(fn($amenity) => [
+                            'data' => $property->amenities->map(fn ($amenity) => [
                                 'type' => 'amenities',
                                 'id' => (string) $amenity->getKey(),
                             ])->values(),
@@ -109,9 +68,9 @@ class PropertyJsonApiController extends BaseApiController
         ]);
     }
 
-    public function show(Property $property)
+    public function show(int $property)
     {
-        $property->loadMissing(['propertyType', 'amenities']);
+        $property = $this->propertyService->getPublicProperty($property);
 
         $gallery = $property->getMedia('gallery')->map(function ($media) {
             return [
@@ -142,8 +101,12 @@ class PropertyJsonApiController extends BaseApiController
                     'ward' => $property->ward,
                     'price' => $property->price,
                     'price-unit' => $property->price_unit,
+                    'long-term-months' => $property->long_term_months,
+                    'long-term-price' => $property->long_term_price,
+                    'deposit-amount' => $property->deposit_amount,
                     'area' => $property->area,
                     'status' => $property->status,
+                    'view-count' => (int) $property->views,
                     'featured-image' => $featuredImageUrl ?: null,
                 ],
                 'relationships' => [
@@ -154,13 +117,13 @@ class PropertyJsonApiController extends BaseApiController
                         ],
                     ],
                     'amenities' => [
-                        'data' => $property->amenities->map(fn($amenity) => [
+                        'data' => $property->amenities->map(fn ($amenity) => [
                             'type' => 'amenities',
                             'id' => (string) $amenity->getKey(),
                         ])->values(),
                     ],
                     'images' => [
-                        'data' => $gallery->map(fn($image) => [
+                        'data' => $gallery->map(fn ($image) => [
                             'type' => 'property-images',
                             'id' => $image['id'],
                         ])->values(),
@@ -168,7 +131,7 @@ class PropertyJsonApiController extends BaseApiController
                 ],
             ],
             'included' => [
-                ...$property->amenities->map(fn($amenity) => [
+                ...$property->amenities->map(fn ($amenity) => [
                     'type' => 'amenities',
                     'id' => (string) $amenity->getKey(),
                     'attributes' => [
@@ -179,6 +142,13 @@ class PropertyJsonApiController extends BaseApiController
                 ])->values()->all(),
                 ...$gallery->all(),
             ],
+        ]);
+    }
+
+    public function recordView(int $property)
+    {
+        return response()->json([
+            'data' => ['views' => $this->propertyService->recordView($property)],
         ]);
     }
 }

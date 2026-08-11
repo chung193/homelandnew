@@ -16,8 +16,17 @@ export const getAmenities = async () => {
 };
 
 export const storage = async (data) => {
-    const response = await authInstance.post('property-types', data);
+    const response = await authInstance.post('property-types', toFormData(data));
     return response;
+};
+
+const toFormData = (data) => {
+    const form = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+        if (key === 'amenity_ids') (value || []).forEach((id) => form.append('amenity_ids[]', id));
+        else if (value !== undefined && value !== null) form.append(key, typeof value === 'boolean' ? (value ? '1' : '0') : value);
+    });
+    return form;
 };
 
 export const update = async (id, data) => {

@@ -16,6 +16,7 @@ class PropertyTypeResource extends JsonResource
             'description' => $this->description,
             'is_active' => $this->is_active,
             'sort_order' => $this->sort_order,
+            'icon' => $this->getFirstMediaUrl('icon', 'icon_thumb') ?: $this->getFirstMediaUrl('icon') ?: null,
             'amenities' => $this->whenLoaded('amenities', function () {
                 return $this->amenities->map(function ($amenity) {
                     return [

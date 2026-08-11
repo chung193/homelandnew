@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Api\Property;
 
+use App\Http\Resources\Api\User\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -12,6 +13,7 @@ class PropertyResource extends JsonResource
         return [
             'id' => $this->id,
             'user_id' => $this->user_id,
+            'user' => UserResource::make($this->whenLoaded('user')),
             'property_type_id' => $this->property_type_id,
             'listing_type' => $this->listing_type,
             'title' => $this->title,
@@ -24,6 +26,11 @@ class PropertyResource extends JsonResource
             'ward' => $this->ward,
             'price' => $this->price,
             'price_unit' => $this->price_unit,
+            'long_term_months' => $this->long_term_months,
+            'long_term_price' => $this->long_term_price,
+            'deposit_amount' => $this->deposit_amount,
+            'posting_fee' => (int) $this->posting_fee,
+            'views' => (int) $this->views,
             'area' => $this->area,
             'bedrooms' => $this->bedrooms,
             'bathrooms' => $this->bathrooms,

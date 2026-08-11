@@ -15,7 +15,7 @@ class VerifyEmailNotification extends VerifyEmail
             'api.v1.auth.verify.email',
             Carbon::now()->addMinutes(60),
             [
-                'id'   => $notifiable->getKey(),
+                'id' => $notifiable->getKey(),
                 'hash' => sha1($notifiable->getEmailForVerification()),
             ]
         );
@@ -23,15 +23,15 @@ class VerifyEmailNotification extends VerifyEmail
 
     public function toMail($notifiable)
     {
-        $url = config('app.frontend_url') .
-            "/auth/verify-email?url=" . urlencode($this->verificationUrl($notifiable));
+        $url = rtrim((string) config('app.frontend_url'), '/') .
+            '/vi/customer/verify-email?url=' . urlencode($this->verificationUrl($notifiable));
 
         return (new MailMessage)
-            ->subject('✅ Xác thực email')
+            ->subject('Xác thực email')
             ->greeting('Xin chào!')
             ->line('Vui lòng xác thực email để kích hoạt tài khoản.')
             ->action('Xác thực ngay', $url)
-            ->line('Link hết hạn sau 60 phút.')
+            ->line('Liên kết hết hạn sau 60 phút.')
             ->salutation('Trân trọng, ' . config('app.name'));
     }
 }

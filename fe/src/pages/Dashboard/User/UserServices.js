@@ -37,6 +37,8 @@ export const assignRoles = async (id, roleIds = []) => {
     return response
 }
 
+export const forceLogout = async (id) => authInstance.patch(`user/${id}/force-logout`)
+
 export const destroy = async (id) => {
     const response = await authInstance.delete(`user/${id}`)
     return response

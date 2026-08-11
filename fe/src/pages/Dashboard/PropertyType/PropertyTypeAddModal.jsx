@@ -10,6 +10,8 @@ import { slugify } from '@utils/common';
 const PropertyTypeAddModal = ({ onSubmit, onClose }) => {
     const { t } = useTranslation('dashboard');
     const [amenities, setAmenities] = useState([]);
+    const [icon, setIcon] = useState(null);
+    const [iconPreview, setIconPreview] = useState('');
 
     useEffect(() => {
         const loadAmenities = async () => {
@@ -46,6 +48,7 @@ const PropertyTypeAddModal = ({ onSubmit, onClose }) => {
             ...data,
             slug: data.slug || slugify(data.name),
             amenity_ids: (data.amenity_ids || []).map((item) => Number(item)),
+            icon,
         });
     };
 
@@ -56,6 +59,8 @@ const PropertyTypeAddModal = ({ onSubmit, onClose }) => {
                 <TextField label={t('pages.propertyType.form.slug')} fullWidth size="small" {...register('slug')} />
                 <TextField label={t('pages.propertyType.form.description')} fullWidth multiline rows={3} size="small" {...register('description')} />
                 <TextField label={t('pages.propertyType.form.sortOrder')} type="number" fullWidth size="small" {...register('sort_order', { valueAsNumber: true })} />
+                <Button component="label" variant="outlined" sx={{ textTransform: 'none' }}>Chọn icon minh họa<input hidden type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => { const file = event.target.files?.[0] || null; setIcon(file); if (iconPreview) URL.revokeObjectURL(iconPreview); setIconPreview(file ? URL.createObjectURL(file) : ''); }}/></Button>
+                {iconPreview ? <Box component="img" src={iconPreview} alt="Xem trước icon" sx={{ width: 120, height: 120, objectFit: 'contain', border: '1px solid', borderColor: 'divider', borderRadius: 2, p: 1 }} /> : null}
 
                 <Controller
                     name="amenity_ids"

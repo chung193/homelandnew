@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { show, getAllRole, assignRoles } from "./UserServices";
+import { show, getAllRole, assignRoles, forceLogout } from "./UserServices";
 import { Box, Typography, Stack, Avatar, Chip, FormControl, InputLabel, Select, MenuItem, OutlinedInput, Button } from '@mui/material';
 import { useGlobalContext } from '@providers/GlobalProvider';
 import { getMediaUrl } from '@utils/mediaUrl';
@@ -9,6 +9,7 @@ const UserInfo = ({ id }) => {
     const [roles, setRoles] = useState([])
     const [selectedRoleIds, setSelectedRoleIds] = useState([])
     const [savingRoles, setSavingRoles] = useState(false)
+    const [forcingLogout, setForcingLogout] = useState(false)
     const { showNotification } = useGlobalContext()
 
     const loadUser = () => {
@@ -60,6 +61,19 @@ const UserInfo = ({ id }) => {
                 showNotification(err.response?.data?.message || 'Không cập nhật được role', 'error')
             })
             .finally(() => setSavingRoles(false))
+    }
+
+    const handleForceLogout = async () => {
+        if (!window.confirm('Buộc tài khoản này đăng xuất trên tất cả thiết bị?')) return
+        setForcingLogout(true)
+        try {
+            const response = await forceLogout(id)
+            showNotification(response.data?.data?.message || 'Đã buộc đăng xuất', 'success')
+        } catch (error) {
+            showNotification(error.response?.data?.message || 'Không thể buộc đăng xuất', 'error')
+        } finally {
+            setForcingLogout(false)
+        }
     }
 
     return (
@@ -129,6 +143,9 @@ const UserInfo = ({ id }) => {
                     sx={{ alignSelf: 'flex-start' }}
                 >
                     {savingRoles ? 'Đang lưu...' : 'Lưu role'}
+                </Button>
+                <Button color="warning" variant="outlined" size="small" onClick={handleForceLogout} disabled={forcingLogout} sx={{ alignSelf: 'flex-start' }}>
+                    {forcingLogout ? 'Đang xử lý...' : 'Buộc đăng xuất'}
                 </Button>
             </Stack>
 

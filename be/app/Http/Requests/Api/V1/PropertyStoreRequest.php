@@ -26,6 +26,9 @@ class PropertyStoreRequest extends FormRequest
             'ward' => ['nullable', 'string', 'max:255'],
             'price' => ['nullable', 'numeric'],
             'price_unit' => ['nullable', 'string', 'max:50'],
+            'long_term_months' => ['nullable', 'integer', 'min:2', 'max:120', 'required_with:long_term_price'],
+            'long_term_price' => ['nullable', 'numeric', 'min:0', 'required_with:long_term_months'],
+            'deposit_amount' => ['nullable', 'numeric', 'min:0'],
             'area' => ['nullable', 'numeric'],
             'bedrooms' => ['nullable', 'integer'],
             'bathrooms' => ['nullable', 'integer'],
@@ -35,7 +38,7 @@ class PropertyStoreRequest extends FormRequest
             'is_active' => ['nullable', 'boolean'],
             'amenities' => ['nullable', 'array'],
             'amenities.*' => ['integer', 'exists:amenities,id'],
-            'images' => ['nullable', 'array'],
+            'images' => ['nullable', 'array', 'max:10'],
             'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'featured_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ];

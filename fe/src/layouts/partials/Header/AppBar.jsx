@@ -17,7 +17,7 @@ const FULL = 250;
 const MINI = 56;
 
 
-const AppBar = () => {
+const AppBar = ({ onOpenMobileMenu }) => {
 
     const dispatch = useDispatch();
     const {
@@ -43,6 +43,9 @@ const AppBar = () => {
         }}
     >
         <Toolbar sx={{ gap: 2, justifyContent: 'space-between' }} >
+            <IconButton color="inherit" aria-label="Mở menu" onClick={onOpenMobileMenu} sx={{ display: { xs: 'inline-flex', sm: 'none' } }}>
+                <MenuIcon />
+            </IconButton>
             {isCollapsed && <IconButton
                 color="inherit"
                 aria-label="toggle sidebar"

@@ -1,11 +1,16 @@
 import { authInstance } from '@services/axios';
 
 export const getAll = async (params = {}) => {
-    const sortParam = params.sort || '-created_at';
+    const { status, listingType, propertyTypeId, ...rest } = params;
+    const sortParam = rest.sort || '-created_at';
     const response = await authInstance.get('properties', {
         params: {
             sort: sortParam,
-            ...params,
+            include: 'propertyType',
+            ...rest,
+            ...(status ? { 'filter[status]': status } : {}),
+            ...(listingType ? { 'filter[listing_type]': listingType } : {}),
+            ...(propertyTypeId ? { 'filter[property_type_id]': propertyTypeId } : {}),
         },
     });
     return response;
@@ -22,6 +27,10 @@ export const storage = async (data) => {
 };
 
 export const update = async (id, data) => {
+    if (data instanceof FormData) {
+        data.append('_method', 'PUT');
+        return authInstance.post(`properties/${id}`, data);
+    }
     const response = await authInstance.put(`properties/${id}`, data);
     return response;
 };

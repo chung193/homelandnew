@@ -1,6 +1,9 @@
-import { Chip } from '@mui/material';
+import { Button, Chip, Stack } from '@mui/material';
 
-const getColumns = (t) => [
+const statusLabels = { pending: 'Chờ duyệt', published: 'Đã duyệt', archived: 'Từ chối/Lưu trữ', draft: 'Bản nháp', sold: 'Đã bán', rented: 'Đã thuê' };
+const statusColors = { pending: 'warning', published: 'success', archived: 'error', draft: 'default', sold: 'info', rented: 'info' };
+
+const getColumns = (t, onApprove, onReject, onView) => [
     {
         field: 'stt',
         headerName: t('pages.property.table.stt'),
@@ -18,8 +21,18 @@ const getColumns = (t) => [
     {
         field: 'title',
         headerName: t('pages.property.table.title'),
-        width: 220,
-        editable: true,
+        width: 260,
+        editable: false,
+        renderCell: (params) => (
+            <Button
+                variant="text"
+                color="primary"
+                onClick={() => onView(params.row)}
+                sx={{ justifyContent: 'flex-start', px: 0, textAlign: 'left', textTransform: 'none', whiteSpace: 'normal' }}
+            >
+                {params.value}
+            </Button>
+        ),
     },
     {
         field: 'property_type',
@@ -56,7 +69,7 @@ const getColumns = (t) => [
         headerName: t('pages.property.table.status'),
         width: 140,
         editable: true,
-        renderCell: (params) => <Chip label={params.value || 'draft'} size="small" variant="outlined" />,
+        renderCell: (params) => <Chip label={statusLabels[params.value] || params.value || 'Bản nháp'} color={statusColors[params.value] || 'default'} size="small" variant="outlined" />,
     },
     {
         field: 'is_active',
@@ -64,6 +77,16 @@ const getColumns = (t) => [
         width: 120,
         editable: true,
         renderCell: (params) => <Chip label={params.value ? 'Hiển thị' : 'Ẩn'} color={params.value ? 'success' : 'default'} size="small" />,
+    },
+    {
+        field: 'actions', headerName: 'Thao tác', width: 280, sortable: false, filterable: false,
+        renderCell: (params) => <Stack direction="row" spacing={1}>
+            <Button size="small" variant="text" onClick={() => onView(params.row)}>Chi tiết</Button>
+            {params.row.status === 'pending' ? <>
+            <Button size="small" variant="contained" color="success" onClick={() => onApprove(params.row)}>Duyệt</Button>
+            <Button size="small" variant="outlined" color="error" onClick={() => onReject(params.row)}>Từ chối</Button>
+            </> : null}
+        </Stack>,
     },
 ];
 

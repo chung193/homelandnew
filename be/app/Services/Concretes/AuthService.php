@@ -9,12 +9,14 @@ use App\Services\Base\Concretes\BaseService;
 use App\Services\Contracts\AuthServiceInterface;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Tymon\JWTAuth\Exceptions\JWTException;
-use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
+use Tymon\JWTAuth\Exceptions\JWTException;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthService extends BaseService implements AuthServiceInterface
 {
@@ -42,6 +44,7 @@ class AuthService extends BaseService implements AuthServiceInterface
         ]);
         $user->assignRole('client');
         $user->sendEmailVerificationNotification();
+
         return $this->prepareUserWithToken($user);
     }
 
@@ -76,7 +79,7 @@ class AuthService extends BaseService implements AuthServiceInterface
 
     public function forgot($email): string
     {
-        return  Password::sendResetLink(
+        return Password::sendResetLink(
             $email
         );
     }
@@ -89,6 +92,7 @@ class AuthService extends BaseService implements AuthServiceInterface
                 $user->forceFill([
                     'password' => Hash::make($password),
                     'remember_token' => Str::random(60),
+                    'auth_version' => ((int) $user->auth_version) + 1,
                 ])->save();
             }
         );
@@ -110,11 +114,9 @@ class AuthService extends BaseService implements AuthServiceInterface
         }
 
         // Load media relationship to get avatar URL
-        $user->load('media');
+        $user->load(['media', 'detail']);
 
         // Set avatar attribute directly from media
-        $user->avatar = $user->getFirstMediaUrl('avatar', 'thumb');
-
         return $user;
     }
 
@@ -136,7 +138,7 @@ class AuthService extends BaseService implements AuthServiceInterface
 
             return $token;
         } catch (JWTException $e) {
-            throw new AuthenticationException('Failed to refresh token: ' . $e->getMessage());
+            throw new AuthenticationException('Failed to refresh token: '.$e->getMessage());
         }
     }
 
@@ -150,11 +152,52 @@ class AuthService extends BaseService implements AuthServiceInterface
         return true;
     }
 
+    public function updateProfile(User $user, array $data, ?UploadedFile $avatar = null): User
+    {
+        $user->fill([
+            'name' => $data['name'],
+            'email' => $data['email'],
+        ])->save();
+
+        $user->detail()->updateOrCreate([], [
+            'phone' => $data['phone'] ?? null,
+            'address' => $data['address'] ?? null,
+            'city' => $data['city'] ?? null,
+            'birthday' => $data['birthday'] ?? null,
+            'description' => $data['description'] ?? null,
+        ]);
+
+        if ($avatar) {
+            $user->clearMediaCollection('avatar');
+            $user->addMedia($avatar)->toMediaCollection('avatar');
+        }
+
+        $user->refresh()->load(['media', 'detail']);
+
+        return $user;
+    }
+
+    public function changePassword(User $user, string $currentPassword, string $newPassword): void
+    {
+        if (! Hash::check($currentPassword, $user->password)) {
+            throw ValidationException::withMessages([
+                'current_password' => ['Mật khẩu hiện tại không chính xác.'],
+            ]);
+        }
+
+        $user->forceFill([
+            'password' => Hash::make($newPassword),
+            'remember_token' => Str::random(60),
+            'auth_version' => ((int) $user->auth_version) + 1,
+        ])->save();
+
+        Auth::logout();
+    }
+
     private function prepareUserWithToken(User $user, ?string $token = null): array
     {
-        // Load media relationship and set avatar attribute for UserResource
-        $user->load('media');
-        $user->avatar = $user->getFirstMediaUrl('avatar', 'thumb');
+        // Load relationships required by UserResource.
+        $user->load(['media', 'detail']);
 
         return [
             'user' => new UserResource($user),

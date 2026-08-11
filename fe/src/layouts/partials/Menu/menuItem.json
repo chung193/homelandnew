@@ -64,6 +64,17 @@
         ]
     },
     {
+        "id": "owner-applications",
+        "label": "Duyệt chủ BĐS",
+        "icon": "security",
+        "url": "/dashboard/owner-applications",
+        "initiallyOpen": false,
+        "external": false,
+        "roles": [
+            "admin"
+        ]
+    },
+    {
         "id": "app",
         "label": "App",
         "icon": "apps",
@@ -146,7 +157,7 @@
                     },
                     {
                         "id": "property",
-                        "label": "Property",
+                        "label": "Duyệt & quản lý tin",
                         "url": "/dashboard/property"
                     },
                     {

@@ -42,6 +42,13 @@ class PropertyApiTest extends TestCase
             'email' => 'test@example.com',
             'password' => bcrypt('password123'),
             'is_active' => true,
+            'account_type' => 'property_owner',
+            'test_posting_credits' => 1,
+        ]);
+        $user->ownerApplication()->create([
+            'status' => 'approved',
+            'identity_front_path' => 'private/front.jpg',
+            'ownership_document_path' => 'private/ownership.pdf',
         ]);
         $propertyType = PropertyType::create([
             'name' => 'Villa',

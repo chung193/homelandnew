@@ -3,19 +3,18 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Api\BaseApiController;
-use App\Http\Requests\Api\V1\Auth\ForgotRequest;
-use App\Http\Requests\Api\V1\Auth\UpdateProfileRequest;
 use App\Http\Requests\Api\V1\Auth\ChangePasswordRequest;
+use App\Http\Requests\Api\V1\Auth\ForgotRequest;
 use App\Http\Requests\Api\V1\Auth\LoginRequest;
 use App\Http\Requests\Api\V1\Auth\RegisterRequest;
 use App\Http\Requests\Api\V1\Auth\ResetPasswordRequest;
+use App\Http\Requests\Api\V1\Auth\UpdateProfileRequest;
 use App\Http\Resources\Api\User\UserResource;
+use App\Models\User;
 use App\Services\Contracts\AuthServiceInterface;
+use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use App\Models\User;
-use Illuminate\Auth\Events\Verified;
-use Illuminate\Support\Facades\Hash;
 
 class AuthController extends BaseApiController
 {
@@ -52,6 +51,7 @@ class AuthController extends BaseApiController
     public function forgot(ForgotRequest $request): JsonResponse
     {
         $data = $this->authService->forgot($request->validated());
+
         return $this->successResponse($data);
     }
 
@@ -61,6 +61,7 @@ class AuthController extends BaseApiController
     public function reset(ResetPasswordRequest $request): JsonResponse
     {
         $data = $this->authService->resetPassword($request->validated());
+
         return $this->successResponse($data);
     }
 
@@ -73,13 +74,13 @@ class AuthController extends BaseApiController
             sha1($user->getEmailForVerification())
         )) {
             return response()->json([
-                'message' => 'Link không hợp lệ'
+                'message' => 'Link không hợp lệ',
             ], 400);
         }
 
         if ($user->hasVerifiedEmail()) {
             return response()->json([
-                'message' => 'Email đã xác thực'
+                'message' => 'Email đã xác thực',
             ]);
         }
 
@@ -88,7 +89,7 @@ class AuthController extends BaseApiController
         event(new Verified($user));
 
         return response()->json([
-            'message' => 'Xác thực thành công'
+            'message' => 'Xác thực thành công',
         ]);
     }
 
@@ -98,12 +99,9 @@ class AuthController extends BaseApiController
             ->sendEmailVerificationNotification();
 
         return response()->json([
-            'message' => 'Đã gửi lại email xác thực'
+            'message' => 'Đã gửi lại email xác thực',
         ]);
     }
-
-
-
 
     /**
      * Get the authenticated user.
@@ -123,13 +121,11 @@ class AuthController extends BaseApiController
             return $this->unauthorizedResponse('User not authenticated');
         }
 
-        $user->fill($request->validated());
-        $user->save();
-        $user->refresh();
-
-        // Load media relationship before getting avatar URL
-        $user->load('media');
-        $user->avatar = $user->getFirstMediaUrl('avatar', 'thumb');
+        $user = $this->authService->updateProfile(
+            $user,
+            $request->validated(),
+            $request->file('avatar'),
+        );
 
         return $this->successResponse([
             'message' => 'Profile updated successfully',
@@ -145,16 +141,15 @@ class AuthController extends BaseApiController
             return $this->unauthorizedResponse('User not authenticated');
         }
 
-        if (! Hash::check($request->input('current_password'), $user->password)) {
-            return $this->validationErrorResponse('Current password is incorrect');
-        }
-
-        $user->forceFill([
-            'password' => Hash::make($request->input('password')),
-        ])->save();
+        $this->authService->changePassword(
+            $user,
+            (string) $request->input('current_password'),
+            (string) $request->input('password'),
+        );
 
         return $this->successResponse([
-            'message' => 'Password changed successfully',
+            'message' => 'Đổi mật khẩu thành công. Vui lòng đăng nhập lại.',
+            'requires_login' => true,
         ]);
     }
 

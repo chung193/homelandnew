@@ -15,6 +15,7 @@ class UserDetail extends Model
     protected $keyType = 'string';
     protected $fillable = [
         'address',
+        'phone',
         'city',
         'user_id',
         'description',
