@@ -42,6 +42,18 @@
                 "url": "/dashboard/user"
             },
             {
+                "id": "identity-verifications",
+                "label": "Duyệt phân loại tài khoản",
+                "url": "/dashboard/identity-verifications",
+                "roles": ["admin"]
+            },
+            {
+                "id": "account-types",
+                "label": "Quản lý loại tài khoản",
+                "url": "/dashboard/account-types",
+                "roles": ["admin"]
+            },
+            {
                 "id": "self-registered-accounts",
                 "label": "Khách tự đăng ký",
                 "url": "/dashboard/user?source=self_registered"

@@ -10,11 +10,11 @@ import { Text } from '@astryxdesign/core/Text';
 import { VStack } from '@astryxdesign/core/VStack';
 import { getMessages } from '../../../../i18n/messages';
 import { isLocale, type Locale } from '../../../../i18n/config';
-import BookingPanel from './BookingPanel';
 import ReviewPanel from './ReviewPanel';
 import PropertyGallery from './PropertyGallery';
 import {statusLabel} from '../../../../lib/displayLabels';
 import PropertyViewCount from './PropertyViewCount';
+import PropertyBookingActions from './PropertyBookingActions';
 
 type PropertyAttributes = {
     title: string;
@@ -278,16 +278,13 @@ export default async function PropertyDetailPage({ params }: PageProps) {
                     </VStack>
                 </Card>
 
-                <BookingPanel
-                    locale={activeLocale}
-                    propertyId={property.id}
-                    listingType={attrs['listing-type']}
-                    unitPrice={attrs.price}
-                    priceUnit={attrs['price-unit']}
-                    longTermMonths={attrs['long-term-months']??null}
-                    longTermPrice={attrs['long-term-price']??null}
-                    depositAmount={attrs['deposit-amount']??null}
-                />
+                <Card variant="default" padding={4} elevation="low">
+                    <VStack gap={3}>
+                        <Heading level={4}>{activeLocale === 'vi' ? 'Bạn quan tâm bất động sản này?' : 'Interested in this property?'}</Heading>
+                        <Text type="supporting">{activeLocale === 'vi' ? 'Chọn nhu cầu để chuyển sang màn hình đặt lịch riêng.' : 'Choose an option to continue on a dedicated booking page.'}</Text>
+                        <PropertyBookingActions locale={activeLocale} propertyId={property.id} canRent={attrs['listing-type'] === 'rent'} />
+                    </VStack>
+                </Card>
                 <ReviewPanel
                     locale={activeLocale}
                     propertyId={property.id}

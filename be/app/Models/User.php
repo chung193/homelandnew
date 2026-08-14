@@ -110,9 +110,28 @@ class User extends Authenticatable implements HasMedia, JWTSubject, MustVerifyEm
         return $this->hasMany(Booking::class, 'customer_id');
     }
 
+    public function viewingAppointments(): HasMany
+    {
+        return $this->hasMany(ViewingAppointment::class, 'viewer_id');
+    }
+
     public function ownerApplication(): HasOne
     {
         return $this->hasOne(OwnerApplication::class);
+    }
+
+    public function identityVerification(): HasOne
+    {
+        return $this->hasOne(IdentityVerification::class);
+    }
+
+    public function isIdentityVerified(): bool
+    {
+        if ($this->identityVerification) {
+            return $this->identityVerification->status === 'approved';
+        }
+
+        return $this->ownerApplication?->status === 'approved';
     }
 
     public function sendEmailVerificationNotification()

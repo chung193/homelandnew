@@ -1,0 +1,8 @@
+<?php
+namespace App\Http\Controllers\Api\V1;use App\Http\Controllers\Api\BaseApiController;use App\Models\AccountType;use Illuminate\Http\JsonResponse;use Illuminate\Http\Request;use Illuminate\Validation\Rule;
+class AccountTypeController extends BaseApiController{
+public function active():JsonResponse{return $this->successResponse(AccountType::query()->where('is_active',true)->orderBy('sort_order')->orderBy('name')->get());}
+public function index(Request $request):JsonResponse{if(!$request->user()->isAdmin())return $this->forbiddenResponse();return $this->successResponse(AccountType::query()->orderBy('sort_order')->orderBy('name')->get());}
+public function store(Request $request):JsonResponse{if(!$request->user()->isAdmin())return $this->forbiddenResponse();return $this->createdResponse(AccountType::query()->create($this->validated($request)));}
+public function update(Request $request,AccountType $accountType):JsonResponse{if(!$request->user()->isAdmin())return $this->forbiddenResponse();$accountType->update($this->validated($request,$accountType));return $this->successResponse($accountType);}
+private function validated(Request $request,?AccountType $item=null):array{return $request->validate(['code'=>['required','string','max:50','regex:/^[a-z0-9_]+$/',Rule::unique('account_types','code')->ignore($item?->id)],'name'=>['required','string','max:100'],'description'=>['nullable','string','max:1000'],'document_kind'=>['required','in:identity,supporting'],'document_label'=>['required','string','max:150'],'requires_back_side'=>['required','boolean'],'requires_tax_code'=>['required','boolean'],'is_active'=>['required','boolean'],'sort_order'=>['required','integer','min:0','max:9999']]);}}

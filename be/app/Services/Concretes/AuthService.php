@@ -41,6 +41,7 @@ class AuthService extends BaseService implements AuthServiceInterface
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
             'registration_source' => 'self_registered',
+            'account_type' => $data['account_type'],
         ]);
         $user->assignRole('client');
         $user->sendEmailVerificationNotification();

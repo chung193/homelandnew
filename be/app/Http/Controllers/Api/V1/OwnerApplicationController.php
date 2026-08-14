@@ -19,23 +19,20 @@ class OwnerApplicationController extends BaseApiController
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'identity_front' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
-            'identity_back' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
             'ownership_document' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:10240'],
             'note' => ['nullable', 'string', 'max:2000'],
         ]);
         $user = $request->user();
+        if (! $user->isIdentityVerified()) return $this->forbiddenResponse('Bạn cần xác minh CCCD trước khi đăng tin bất động sản.');
         $existing = OwnerApplication::query()->where('user_id', $user->id)->first();
         if ($existing?->status === 'approved') return $this->validationErrorResponse('Owner account is already approved.');
 
         $directory = "owner-applications/{$user->id}";
         if ($existing) {
-            Storage::disk('local')->delete(array_filter([$existing->identity_front_path, $existing->identity_back_path, $existing->ownership_document_path]));
+            Storage::disk('local')->delete(array_filter([$existing->ownership_document_path]));
         }
         $application = OwnerApplication::query()->updateOrCreate(['user_id' => $user->id], [
             'status' => 'pending',
-            'identity_front_path' => $request->file('identity_front')->store($directory, 'local'),
-            'identity_back_path' => $request->file('identity_back')?->store($directory, 'local'),
             'ownership_document_path' => $request->file('ownership_document')->store($directory, 'local'),
             'note' => $data['note'] ?? null, 'rejection_reason' => null, 'reviewed_by' => null, 'reviewed_at' => null,
         ]);
@@ -80,7 +77,6 @@ class OwnerApplicationController extends BaseApiController
         DB::transaction(function () use ($application, $request, $data) {
             $application->update(['status'=>$data['status'],'rejection_reason'=>$data['rejection_reason'] ?? null,'reviewed_by'=>$request->user()->id,'reviewed_at'=>now()]);
             if ($data['status'] === 'approved') {
-                $application->user()->update(['account_type' => 'property_owner']);
                 $application->user->syncRoles(['property_owner']);
             }
         });
@@ -97,6 +93,10 @@ class OwnerApplicationController extends BaseApiController
             default => abort(404),
         };
         $path = $application->{$field};
+        if (! $path && in_array($type, ['identity-front', 'identity-back'], true)) {
+            $verification = $application->user?->identityVerification;
+            $path = $type === 'identity-front' ? $verification?->identity_front_path : $verification?->identity_back_path;
+        }
         abort_unless($path && Storage::disk('local')->exists($path), 404);
         return Storage::disk('local')->download($path);
     }

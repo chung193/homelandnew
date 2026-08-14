@@ -74,8 +74,9 @@ export default function AccountMenu({ locale }: { locale: Locale }) {
                     <Button className="w-full" label={vi ? 'Thông tin tài khoản' : 'Account details'} variant="ghost" onClick={() => go(`/${locale}/customer/account`)} />
                     <Button className="w-full" label={vi ? 'Ví của tôi' : 'My wallet'} variant="ghost" onClick={() => go(`/${locale}/wallet`)} />
                     <Button className="w-full" label={vi ? 'Lịch thuê của tôi' : 'My bookings'} variant="ghost" onClick={() => go(`/${locale}/customer/bookings`)} />
+                    <Button className="w-full" label={vi ? 'Lịch xem nhà của tôi' : 'My viewings'} variant="ghost" onClick={() => go(`/${locale}/customer/viewing-appointments`)} />
                     {user.account_type === 'property_owner' ? <Button className="w-full" label={vi ? 'Đăng tin bất động sản' : 'Post property'} variant="ghost" onClick={() => go(`/${locale}/owner/properties/create`)} /> : <Button className="w-full" label={vi ? 'Trở thành chủ nhà' : 'Become an owner'} variant="ghost" onClick={() => go(`/${locale}/owner/register`)} />}
-                    {user.account_type === 'property_owner' ? <Button className="w-full" label={vi ? 'Booking chủ nhà' : 'Owner bookings'} variant="ghost" onClick={() => go(`/${locale}/owner/bookings`)} /> : null}
+                    {user.account_type !== 'customer' ? <Button className="w-full" label={vi ? 'Booking chủ nhà' : 'Owner bookings'} variant="ghost" onClick={() => go(`/${locale}/owner/bookings`)} /> : null}
                     <Button className="mt-1 w-full" label={vi ? 'Đăng xuất' : 'Log out'} variant="secondary" onClick={() => void logout()} />
                 </div>
             </div>

@@ -28,6 +28,8 @@ import Amenity from '@pages/Dashboard/Amenity/Amenity';
 import Location from '@pages/Dashboard/Location/Location';
 import OwnerApplication from '@pages/Dashboard/OwnerApplication/OwnerApplication';
 import OwnerApplicationDetail from '@pages/Dashboard/OwnerApplication/OwnerApplicationDetail';
+import IdentityVerification from '@pages/Dashboard/IdentityVerification/IdentityVerification';
+import AccountType from '@pages/Dashboard/AccountType/AccountType';
 
 export const DashboardRoutes = [
     {
@@ -60,7 +62,9 @@ export const DashboardRoutes = [
             { path: 'amenity', element: <Amenity /> },
             { path: 'location', element: <Location /> },
             { path: 'owner-applications', element: <OwnerApplication /> },
-            { path: 'owner-applications/:id', element: <OwnerApplicationDetail /> }
+            { path: 'owner-applications/:id', element: <OwnerApplicationDetail /> },
+            { path: 'identity-verifications', element: <IdentityVerification /> },
+            { path: 'account-types', element: <AccountType /> }
         ]
     }
 ];
