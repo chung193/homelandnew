@@ -86,6 +86,11 @@ class Property extends Model implements HasMedia
         return $this->hasMany(Booking::class);
     }
 
+    public function viewingAppointments(): HasMany
+    {
+        return $this->hasMany(ViewingAppointment::class);
+    }
+
     public function reviews(): HasMany
     {
         return $this->hasMany(PropertyReview::class);

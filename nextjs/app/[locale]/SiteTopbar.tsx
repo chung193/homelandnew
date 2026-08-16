@@ -35,6 +35,9 @@ export default function SiteTopbar({ locale }: { locale: Locale }) {
                 <Link href={`/${locale}/owner/bookings`} className="topbar-link shrink-0 rounded-lg px-3 py-2 text-sm font-medium">
                     {messages.ownerBookingsOpenAction}
                 </Link>
+                <Link href={`/${locale}/owner/viewing-appointments`} className="topbar-link shrink-0 rounded-lg px-3 py-2 text-sm font-medium">
+                    {vi ? 'Lịch xem nhà' : 'Viewing requests'}
+                </Link>
                 <LocaleSwitchButton currentLocale={locale} />
                 <ThemeModeToggle labels={{system:messages.themeSystem,light:messages.themeLight,dark:messages.themeDark,night:messages.themeNight}} />
                 <AccountMenu locale={locale} />

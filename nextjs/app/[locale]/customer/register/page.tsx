@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@astryxdesign/core/Button';
 import { Card } from '@astryxdesign/core/Card';
@@ -26,6 +26,8 @@ export default function CustomerRegisterPage() {
 
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
+    const [accountType, setAccountType] = useState('individual');
+    const [accountTypes, setAccountTypes] = useState<Array<{code:string;name:string}>>([]);
     const [password, setPassword] = useState('');
     const [passwordConfirmation, setPasswordConfirmation] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -41,6 +43,8 @@ export default function CustomerRegisterPage() {
     const messages = getMessages(locale);
     const redirectTarget = searchParams.get('redirect') ?? `/${locale}`;
     const googleLoginUrl = process.env.NEXT_PUBLIC_GOOGLE_LOGIN_URL;
+
+    useEffect(()=>{const timer=setTimeout(async()=>{try{const response=await fetch('/api/account-types',{cache:'no-store'});const result=await response.json();const items=Array.isArray(result.data)?result.data:[];setAccountTypes(items);if(items.length&&!items.some((item:{code:string})=>item.code===accountType))setAccountType(items[0].code)}catch{/* Registration will show the default option. */}},0);return()=>clearTimeout(timer)},[accountType]);
 
     async function handleRegister(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -58,6 +62,7 @@ export default function CustomerRegisterPage() {
                 body: JSON.stringify({
                     name,
                     email,
+                    account_type: accountType,
                     password,
                     password_confirmation: passwordConfirmation,
                 }),
@@ -108,6 +113,19 @@ export default function CustomerRegisterPage() {
                                 required
                                 className="rounded-lg border border-zinc-300 px-3 py-2"
                             />
+                        </label>
+
+                        <label className="flex flex-col gap-1">
+                            <Text>{locale === 'vi' ? 'Loại tài khoản' : 'Account type'}</Text>
+                            <select
+                                value={accountType}
+                                onChange={(event) => setAccountType(event.target.value)}
+                                required
+                                className="rounded-lg border border-zinc-300 px-3 py-2"
+                            >
+                                {(accountTypes.length?accountTypes:[{code:'individual',name:locale==='vi'?'Cá nhân':'Individual'}]).map(item=><option key={item.code} value={item.code}>{item.name}</option>)}
+                            </select>
+                            <Text type="supporting">{locale === 'vi' ? 'Bạn cần gửi giấy tờ tương ứng và được admin duyệt trước khi sử dụng các chức năng yêu cầu xác minh.' : 'Documents and admin approval are required for verified actions.'}</Text>
                         </label>
 
                         <label className="flex flex-col gap-1">

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Booking;
+use App\Models\IdentityVerification;
 use App\Models\Property;
 use App\Models\PropertyType;
 use App\Models\User;
@@ -171,6 +172,7 @@ class BookingApiTest extends TestCase
     {
         $owner = User::factory()->create();
         $customer = User::factory()->create();
+        IdentityVerification::query()->create(['user_id'=>$customer->id,'identity_front_path'=>'test/front.jpg','identity_back_path'=>'test/back.jpg','status'=>'approved']);
         $propertyType = PropertyType::query()->create([
             'name' => 'Apartment',
             'slug' => 'apartment',

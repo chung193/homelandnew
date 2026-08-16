@@ -85,6 +85,10 @@ class BookingController extends BaseApiController
             return $this->unauthorizedResponse();
         }
 
+        if (! $user->isIdentityVerified()) {
+            return $this->forbiddenResponse('Bạn cần xác minh CCCD trước khi đặt lịch thuê');
+        }
+
         $data = $request->validated();
 
         $property = Property::query()->find($data['property_id']);

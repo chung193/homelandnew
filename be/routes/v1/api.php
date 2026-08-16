@@ -3,6 +3,9 @@
 use App\Http\Controllers\Api\V1\AmenityController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BookingController;
+use App\Http\Controllers\Api\V1\ViewingAppointmentController;
+use App\Http\Controllers\Api\V1\IdentityVerificationController;
+use App\Http\Controllers\Api\V1\AccountTypeController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\Client\CategoryController as ClientCategoryController;
 use App\Http\Controllers\Api\V1\Client\CommentController as ClientCommentController;
@@ -106,10 +109,25 @@ Route::get('/property-types/active', [PropertyTypeController::class, 'active'])-
 Route::get('/amenities/all', [AmenityController::class, 'all'])->name('amenities.all');
 Route::get('/amenities/active', [AmenityController::class, 'active'])->name('amenities.active');
 Route::get('/properties/{property}/availability', [BookingController::class, 'availability'])->name('properties.availability');
+Route::get('/account-types/active', [AccountTypeController::class, 'active']);
 Route::get('/properties/{property}/reviews', [PropertyReviewController::class, 'index'])->name('properties.reviews.index');
 Route::post('/payments/momo/ipn', [WalletController::class, 'momoIpn'])->name('payments.momo.ipn');
 
 Route::group(['middleware' => ['auth:api', 'account.active']], function () {
+    Route::get('/identity-verification', [IdentityVerificationController::class, 'show']);
+    Route::get('/admin/account-types', [AccountTypeController::class, 'index']);
+    Route::post('/admin/account-types', [AccountTypeController::class, 'store']);
+    Route::put('/admin/account-types/{accountType}', [AccountTypeController::class, 'update']);
+    Route::post('/identity-verification', [IdentityVerificationController::class, 'store']);
+    Route::get('/admin/identity-verifications', [IdentityVerificationController::class, 'index']);
+    Route::patch('/admin/identity-verifications/{verification}', [IdentityVerificationController::class, 'review']);
+    Route::get('/admin/identity-verifications/{verification}/documents/{side}', [IdentityVerificationController::class, 'document']);
+    Route::post('/viewing-appointments', [ViewingAppointmentController::class, 'store']);
+    Route::get('/my-viewing-appointments', [ViewingAppointmentController::class, 'mine']);
+    Route::get('/owner/viewing-appointments', [ViewingAppointmentController::class, 'owner']);
+    Route::patch('/viewing-appointments/{viewingAppointment}/confirm', [ViewingAppointmentController::class, 'confirm']);
+    Route::patch('/viewing-appointments/{viewingAppointment}/reject', [ViewingAppointmentController::class, 'reject']);
+    Route::patch('/viewing-appointments/{viewingAppointment}/cancel', [ViewingAppointmentController::class, 'cancel']);
     Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
     Route::post('/properties/{property}/reviews', [PropertyReviewController::class, 'store'])->name('properties.reviews.store');
     Route::get('/properties/{property}/review-eligibility', [PropertyReviewController::class, 'eligibility'])->name('properties.reviews.eligibility');

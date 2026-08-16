@@ -24,10 +24,10 @@ export default function AccountMenu({ locale }: { locale: Locale }) {
         setCurrentAccountMode(getAccountMode(cachedUser));
         if (!token) return;
         try {
-            const response = await fetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` }, cache:'no-store' });
+            const response = await fetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' });
             if (response.status === 401) { clearCustomerSession(); setUser(null); return; }
             const result: MeResponse = await response.json();
-            if (response.ok && result.data) { setCustomerSession({token,user:result.data}); setUser(result.data); setCurrentAccountMode(getAccountMode(result.data)); }
+            if (response.ok && result.data) { setCustomerSession({ token, user: result.data }); setUser(result.data); setCurrentAccountMode(getAccountMode(result.data)); }
         } catch { /* Keep the cached profile while offline. */ }
     }, []);
 
@@ -53,7 +53,7 @@ export default function AccountMenu({ locale }: { locale: Locale }) {
     async function logout() {
         const token = getCustomerToken();
         if (token) {
-            try { await fetch('/api/auth/logout', { method:'POST', headers:{Authorization:`Bearer ${token}`} }); } catch { /* Local logout still succeeds. */ }
+            try { await fetch('/api/auth/logout', { method: 'POST', headers: { Authorization: `Bearer ${token}` } }); } catch { /* Local logout still succeeds. */ }
         }
         clearCustomerSession(); setUser(null); detailsRef.current?.removeAttribute('open'); router.push(`/${locale}`); router.refresh();
     }
@@ -87,8 +87,9 @@ export default function AccountMenu({ locale }: { locale: Locale }) {
                     <Button className="w-full" label={vi ? 'Thông tin tài khoản' : 'Account details'} variant="ghost" onClick={() => go(`/${locale}/customer/account`)} />
                     <Button className="w-full" label={vi ? 'Ví của tôi' : 'My wallet'} variant="ghost" onClick={() => go(`/${locale}/wallet`)} />
                     <Button className="w-full" label={vi ? 'Lịch thuê của tôi' : 'My bookings'} variant="ghost" onClick={() => go(`/${locale}/customer/bookings`)} />
-                    {accountMode === 'property_owner' ? <Button className="w-full" label={vi ? 'Đăng tin bất động sản' : 'Post property'} variant="ghost" onClick={() => go(`/${locale}/owner/properties/create`)} /> : null}
-                    {accountMode === 'property_owner' ? <Button className="w-full" label={vi ? 'Booking chủ nhà' : 'Owner bookings'} variant="ghost" onClick={() => go(`/${locale}/owner/bookings`)} /> : null}
+                    <Button className="w-full" label={vi ? 'Lịch xem nhà của tôi' : 'My viewings'} variant="ghost" onClick={() => go(`/${locale}/customer/viewing-appointments`)} />
+                    {user.account_type === 'property_owner' ? <Button className="w-full" label={vi ? 'Đăng tin bất động sản' : 'Post property'} variant="ghost" onClick={() => go(`/${locale}/owner/properties/create`)} /> : <Button className="w-full" label={vi ? 'Trở thành chủ nhà' : 'Become an owner'} variant="ghost" onClick={() => go(`/${locale}/owner/register`)} />}
+                    {user.account_type !== 'customer' ? <Button className="w-full" label={vi ? 'Booking chủ nhà' : 'Owner bookings'} variant="ghost" onClick={() => go(`/${locale}/owner/bookings`)} /> : null}
                     <Button className="mt-1 w-full" label={vi ? 'Đăng xuất' : 'Log out'} variant="secondary" onClick={() => void logout()} />
                 </div>
             </div>
