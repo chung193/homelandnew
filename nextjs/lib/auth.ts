@@ -1,5 +1,8 @@
 export const CUSTOMER_TOKEN_KEY = 'homelend:customer-token';
 export const CUSTOMER_USER_KEY = 'homelend:customer-user';
+export const ACCOUNT_MODE_KEY = 'homelend:account-mode';
+
+export type AccountMode = 'customer' | 'property_owner';
 
 export type CustomerSession = {
     token: string;
@@ -58,6 +61,18 @@ export function getCustomerUser(): CustomerUser | null {
     }
 }
 
+export function getAccountMode(user: CustomerUser | null = getCustomerUser()): AccountMode {
+    if (typeof window === 'undefined' || user?.account_type !== 'property_owner') return 'customer';
+    return window.localStorage.getItem(ACCOUNT_MODE_KEY) === 'customer' ? 'customer' : 'property_owner';
+}
+
+export function setAccountMode(mode: AccountMode, user: CustomerUser | null = getCustomerUser()): void {
+    if (typeof window === 'undefined') return;
+    const allowedMode = user?.account_type === 'property_owner' ? mode : 'customer';
+    window.localStorage.setItem(ACCOUNT_MODE_KEY, allowedMode);
+    window.dispatchEvent(new Event('homelend:account-mode-changed'));
+}
+
 export function clearCustomerSession(): void {
     if (typeof window === 'undefined') {
         return;
@@ -65,5 +80,6 @@ export function clearCustomerSession(): void {
 
     window.localStorage.removeItem(CUSTOMER_TOKEN_KEY);
     window.localStorage.removeItem(CUSTOMER_USER_KEY);
+    window.localStorage.removeItem(ACCOUNT_MODE_KEY);
     window.dispatchEvent(new Event('homelend:session-changed'));
 }

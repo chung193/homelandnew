@@ -24,6 +24,8 @@ type LoginResponse = {
         user?: CustomerUser;
     };
     error?: string;
+    message?: string;
+    errors?: Record<string, string[]>;
 };
 
 export default function CustomerLoginPage() {
@@ -69,7 +71,13 @@ export default function CustomerLoginPage() {
             const result: LoginResponse = await response.json();
 
             if (!response.ok || !result.data?.token) {
-                setErrorMessage(result.error ?? messages.loginFailed);
+                const validationMessage = result.errors
+                    ? Object.values(result.errors).flat()[0]
+                    : undefined;
+
+                setErrorMessage(
+                    result.message ?? result.error ?? validationMessage ?? messages.loginFailed,
+                );
                 return;
             }
 
@@ -115,7 +123,15 @@ export default function CustomerLoginPage() {
                         <Button label={messages.loginAction} variant="primary" type="submit" isLoading={isSubmitting} />
                     </form>
 
-                    {errorMessage ? <Text>{errorMessage}</Text> : null}
+                    {errorMessage ? (
+                        <div
+                            role="alert"
+                            aria-live="polite"
+                            className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700"
+                        >
+                            {errorMessage}
+                        </div>
+                    ) : null}
 
                     <HStack gap={2} wrap="wrap" align="center">
                         <Button

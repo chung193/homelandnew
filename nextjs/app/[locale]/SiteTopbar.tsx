@@ -16,7 +16,7 @@ export default function SiteTopbar({ locale }: { locale: Locale }) {
     return (
         <header className="topbar-shell sticky inset-x-0 top-0 z-50 border-b backdrop-blur">
             <nav
-                className="mx-auto flex w-full max-w-7xl items-center gap-2 overflow-x-auto px-4 py-3 md:px-8"
+                className="mx-auto flex w-full max-w-7xl flex-wrap items-center gap-2 overflow-visible px-4 py-3 md:px-8"
                 aria-label={vi ? 'Điều hướng chính' : 'Main navigation'}
             >
                 <Link href={`/${locale}`} className="topbar-link shrink-0 rounded-lg px-2 py-1" aria-label="Homelend">
