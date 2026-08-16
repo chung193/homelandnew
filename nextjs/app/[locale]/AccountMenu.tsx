@@ -9,6 +9,7 @@ import { clearCustomerSession, getAccountMode, getCustomerToken, getCustomerUser
 import type { Locale } from '../../i18n/config';
 
 type MeResponse = { data?: CustomerUser };
+type WalletResponse = { data?: { balance?: number; posting_fee?: number; test_posting_credits?: number } };
 
 export default function AccountMenu({ locale }: { locale: Locale }) {
     const router = useRouter();
@@ -50,6 +51,28 @@ export default function AccountMenu({ locale }: { locale: Locale }) {
         go(nextMode === 'property_owner' ? `/${locale}/owner/bookings` : `/${locale}`);
     }
 
+    async function openPostProperty() {
+        const token = getCustomerToken();
+        if (!token) { go(`/${locale}/customer/login`); return; }
+
+        try {
+            const response = await fetch('/api/wallet', {
+                headers: { Authorization: `Bearer ${token}` },
+                cache: 'no-store',
+            });
+            const result: WalletResponse = await response.json();
+            const credits = result.data?.test_posting_credits ?? 0;
+            const balance = result.data?.balance ?? 0;
+            const postingFee = result.data?.posting_fee ?? Number.MAX_SAFE_INTEGER;
+
+            go(response.ok && (credits > 0 || balance >= postingFee)
+                ? `/${locale}/owner/properties/create`
+                : `/${locale}/wallet`);
+        } catch {
+            go(`/${locale}/wallet`);
+        }
+    }
+
     async function logout() {
         const token = getCustomerToken();
         if (token) {
@@ -88,7 +111,7 @@ export default function AccountMenu({ locale }: { locale: Locale }) {
                     <Button className="w-full" label={vi ? 'Ví của tôi' : 'My wallet'} variant="ghost" onClick={() => go(`/${locale}/wallet`)} />
                     <Button className="w-full" label={vi ? 'Lịch thuê của tôi' : 'My bookings'} variant="ghost" onClick={() => go(`/${locale}/customer/bookings`)} />
                     <Button className="w-full" label={vi ? 'Lịch xem nhà của tôi' : 'My viewings'} variant="ghost" onClick={() => go(`/${locale}/customer/viewing-appointments`)} />
-                    {user.account_type === 'property_owner' ? <Button className="w-full" label={vi ? 'Đăng tin bất động sản' : 'Post property'} variant="ghost" onClick={() => go(`/${locale}/owner/properties/create`)} /> : <Button className="w-full" label={vi ? 'Trở thành chủ nhà' : 'Become an owner'} variant="ghost" onClick={() => go(`/${locale}/owner/register`)} />}
+                    {user.account_type === 'property_owner' ? <Button className="w-full" label={vi ? 'Đăng tin bất động sản' : 'Post property'} variant="ghost" onClick={() => void openPostProperty()} /> : <Button className="w-full" label={vi ? 'Trở thành chủ nhà' : 'Become an owner'} variant="ghost" onClick={() => go(`/${locale}/owner/register`)} />}
                     {user.account_type !== 'customer' ? <Button className="w-full" label={vi ? 'Booking chủ nhà' : 'Owner bookings'} variant="ghost" onClick={() => go(`/${locale}/owner/bookings`)} /> : null}
                     <Button className="mt-1 w-full" label={vi ? 'Đăng xuất' : 'Log out'} variant="secondary" onClick={() => void logout()} />
                 </div>
