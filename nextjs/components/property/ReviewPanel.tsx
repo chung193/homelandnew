@@ -7,8 +7,8 @@ import { Heading } from '@astryxdesign/core/Heading';
 import { HStack } from '@astryxdesign/core/HStack';
 import { Text } from '@astryxdesign/core/Text';
 import { VStack } from '@astryxdesign/core/VStack';
-import type { Locale } from '../../../../i18n/config';
-import { getCustomerToken } from '../../../../lib/auth';
+import type { Locale } from '../../i18n/config';
+import { getCustomerToken } from '../../lib/auth';
 
 type Review = { id: number; rating: number; comment?: string | null; created_at: string; user?: { name?: string } };
 type ReviewsResponse = { data?: { reviews?: Review[]; average_rating?: number; review_count?: number }; error?: string };

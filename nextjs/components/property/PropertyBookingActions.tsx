@@ -3,8 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { Button } from '@astryxdesign/core/Button';
 import { HStack } from '@astryxdesign/core/HStack';
-import { type Locale } from '../../../../i18n/config';
-import { getCustomerToken } from '../../../../lib/auth';
+import { type Locale } from '../../i18n/config';
+import { getCustomerToken } from '../../lib/auth';
 
 export default function PropertyBookingActions({ locale, propertyId, canRent }: { locale: Locale; propertyId: string; canRent: boolean }) {
     const router = useRouter();

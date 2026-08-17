@@ -7,8 +7,8 @@ import { Card } from '@astryxdesign/core/Card';
 import { Heading } from '@astryxdesign/core/Heading';
 import { Text } from '@astryxdesign/core/Text';
 import { VStack } from '@astryxdesign/core/VStack';
-import { type Locale } from '../../../../i18n/config';
-import { getCustomerToken } from '../../../../lib/auth';
+import { type Locale } from '../../i18n/config';
+import { getCustomerToken } from '../../lib/auth';
 
 export default function ViewingAppointmentPanel({ locale, propertyId }: { locale: Locale; propertyId: string }) {
     const vi = locale === 'vi';

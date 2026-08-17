@@ -15,6 +15,17 @@ export type CustomerUser = {
     email: string;
     avatar?: string | null;
     account_type?: 'customer' | 'property_owner' | string;
+    identity_verified?: boolean;
+    is_property_owner?: boolean;
+    owner_type?: 'household_business' | 'broker' | 'company' | string | null;
+    owner_types?: string[];
+    owner_applications?: Array<{
+        id: number;
+        owner_type: string;
+        status: 'pending' | 'approved' | 'rejected';
+        rejection_reason?: string | null;
+    }>;
+    owner_application_status?: 'pending' | 'approved' | 'rejected' | null;
     wallet_balance?: number;
     test_posting_credits?: number;
     is_verified?: boolean;
@@ -62,13 +73,13 @@ export function getCustomerUser(): CustomerUser | null {
 }
 
 export function getAccountMode(user: CustomerUser | null = getCustomerUser()): AccountMode {
-    if (typeof window === 'undefined' || user?.account_type !== 'property_owner') return 'customer';
+    if (typeof window === 'undefined' || !user?.is_property_owner) return 'customer';
     return window.localStorage.getItem(ACCOUNT_MODE_KEY) === 'customer' ? 'customer' : 'property_owner';
 }
 
 export function setAccountMode(mode: AccountMode, user: CustomerUser | null = getCustomerUser()): void {
     if (typeof window === 'undefined') return;
-    const allowedMode = user?.account_type === 'property_owner' ? mode : 'customer';
+    const allowedMode = user?.is_property_owner ? mode : 'customer';
     window.localStorage.setItem(ACCOUNT_MODE_KEY, allowedMode);
     window.dispatchEvent(new Event('homelend:account-mode-changed'));
 }

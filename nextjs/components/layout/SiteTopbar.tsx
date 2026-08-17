@@ -28,6 +28,9 @@ export default function SiteTopbar({ locale }: { locale: Locale }) {
                 <Link href={`/${locale}/blog`} className="topbar-link shrink-0 rounded-lg px-3 py-2 text-sm font-medium">
                     Blog
                 </Link>
+                <Link href={`/${locale}/customer/saved-properties`} className="topbar-link shrink-0 rounded-lg px-3 py-2 text-sm font-medium">
+                    {vi ? 'Tin đã lưu' : 'Saved'}
+                </Link>
                 <Link href={`/${locale}/wallet`} className="topbar-link shrink-0 rounded-lg px-3 py-2 text-sm font-medium">
                     {vi ? 'Nạp tiền' : 'Wallet'}
                 </Link>

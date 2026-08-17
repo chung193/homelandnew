@@ -7,9 +7,11 @@ import { Card } from '@astryxdesign/core/Card';
 import { Heading } from '@astryxdesign/core/Heading';
 import { Text } from '@astryxdesign/core/Text';
 import { VStack } from '@astryxdesign/core/VStack';
-import { type Locale } from '../../../../i18n/config';
-import { getMessages } from '../../../../i18n/messages';
-import { getCustomerToken } from '../../../../lib/auth';
+import { type Locale } from '../../i18n/config';
+import { getMessages } from '../../i18n/messages';
+import { getCustomerToken } from '../../lib/auth';
+import { formatRoundedMoney } from '../../lib/currency';
+import {addCalendarMonths,calculatePricing,daysBetween,normalizePriceUnit} from '../../features/booking/pricing';
 
 type BookingPanelProps = {
     locale: Locale;
@@ -38,12 +40,9 @@ type BookingCreateResponse = {
 };
 
 function toDisplayPrice(locale: Locale, amount: number): string {
-    return amount.toLocaleString(locale === 'en' ? 'en-US' : 'vi-VN');
+    return formatRoundedMoney(amount, locale);
 }
 
-function addCalendarMonths(value:string,months:number):string{if(!value)return'';const [year,month,day]=value.split('-').map(Number);const target=new Date(Date.UTC(year,month-1+months,1));const lastDay=new Date(Date.UTC(target.getUTCFullYear(),target.getUTCMonth()+1,0)).getUTCDate();target.setUTCDate(Math.min(day,lastDay));return target.toISOString().slice(0,10)}
-function daysBetween(start:string,end:string):number|null{if(!start||!end)return null;const value=(Date.parse(`${end}T00:00:00Z`)-Date.parse(`${start}T00:00:00Z`))/86400000;return value>0?value:null}
-function normalizePriceUnit(value:string):'month'|'day'|'night'{const unit=value.trim().toLowerCase();if(['month','months','monthly','tháng','thang'].includes(unit))return'month';if(['day','days','daily','ngày','ngay'].includes(unit))return'day';return'night'}
 
 export default function BookingPanel({ locale, propertyId, listingType, unitPrice, priceUnit, longTermMonths, longTermPrice, depositAmount }: BookingPanelProps) {
     const router = useRouter();
@@ -71,17 +70,7 @@ export default function BookingPanel({ locale, propertyId, listingType, unitPric
         return Number.isFinite(parsed) ? parsed : null;
     }, [unitPrice]);
 
-    const pricing = useMemo(() => {
-        if (parsedUnitPrice === null || nights === null) {
-            return null;
-        }
-        const units=billingUnit==='month'?rentalMonths:nights;
-        const promotionalPrice=longTermPrice===null?null:Number(longTermPrice);
-        const usesLongTerm=billingUnit==='month'&&longTermMonths!==null&&promotionalPrice!==null&&Number.isFinite(promotionalPrice)&&units>=longTermMonths;
-        const appliedPrice=usesLongTerm?promotionalPrice:parsedUnitPrice;
-        const rentTotal=appliedPrice*units;const deposit=depositAmount===null?0:Number(depositAmount)||0;
-        return {units,usesLongTerm,appliedPrice,rentTotal,deposit,payableTotal:rentTotal+deposit};
-    }, [billingUnit, depositAmount, longTermMonths, longTermPrice, nights, parsedUnitPrice, rentalMonths]);
+    const pricing = useMemo(() => calculatePricing({unitPrice:parsedUnitPrice,nights,billingUnit,rentalMonths,longTermMonths,longTermPrice,depositAmount}), [billingUnit, depositAmount, longTermMonths, longTermPrice, nights, parsedUnitPrice, rentalMonths]);
 
     async function checkAvailability() {
         if (!startDate || !endDate) {

@@ -90,22 +90,40 @@ class PropertyRepository extends QueryableRepository implements PropertyReposito
             $query->where('property_type_id', $propertyTypeId);
         }
 
+        $city = trim((string) $request->input('city', ''));
+        if ($city !== '') {
+            $query->where('city', $city);
+        }
+
         $listingType = (string) $request->input('listing_type', '');
         if (in_array($listingType, ['sale', 'rent'], true)) {
             $query->where('listing_type', $listingType);
         }
 
-        if ($provinceCode = $request->integer('province_code')) {
+        $province = null;
+        if ($request->filled('province_code')) {
+            $provinceCode = $request->integer('province_code');
             $province = Province::query()->where('code', $provinceCode)->orWhere('id', $provinceCode)->first();
-            if ($province) {
-                $query->where('city', 'like', "%{$province->name}%");
+            if (! $province) {
+                $query->whereRaw('1 = 0');
+            } else {
+                $query->where(function ($builder) use ($province) {
+                    $builder->where('city', $province->name)
+                        ->when($province->full_name, fn ($cityQuery) => $cityQuery->orWhere('city', $province->full_name));
+                });
             }
         }
 
-        if ($wardCode = $request->integer('ward_code')) {
+        if ($request->filled('ward_code')) {
+            $wardCode = $request->integer('ward_code');
             $ward = Ward::query()->where('code', $wardCode)->orWhere('id', $wardCode)->first();
-            if ($ward) {
-                $query->where('ward', 'like', "%{$ward->name}%");
+            if (! $ward || ($province && (int) $ward->province_code !== (int) $province->code)) {
+                $query->whereRaw('1 = 0');
+            } else {
+                $query->where(function ($builder) use ($ward) {
+                    $builder->where('ward', $ward->name)
+                        ->when($ward->full_name, fn ($wardQuery) => $wardQuery->orWhere('ward', $ward->full_name));
+                });
             }
         }
 
@@ -115,7 +133,7 @@ class PropertyRepository extends QueryableRepository implements PropertyReposito
     public function findPublicProperty(int $id): Property
     {
         return $this->model->newQuery()
-            ->with(['propertyType', 'amenities', 'media'])
+            ->with(['propertyType', 'amenities', 'media', 'user.detail', 'user.media'])
             ->active()
             ->where('status', 'published')
             ->findOrFail($id);

@@ -6,10 +6,11 @@ import MetaData from '@components/MetaData';
 import { useGlobalContext } from '@providers/GlobalProvider';
 import { getById, update } from './PropertyServices';
 import PropertyAddModal from './PropertyAddModal';
+import { formatToCurrency } from '../../../utils/common';
 
 const labels = { pending: 'Chờ duyệt', published: 'Đã duyệt', archived: 'Từ chối/Lưu trữ', draft: 'Bản nháp', sold: 'Đã bán', rented: 'Đã thuê' };
 const colors = { pending: 'warning', published: 'success', archived: 'error', sold: 'info', rented: 'info' };
-const money = (value) => value == null ? '—' : `${Number(value).toLocaleString('vi-VN')} đ`;
+const money = (value) => value == null ? '—' : formatToCurrency(value);
 
 export default function PropertyDetail() {
     const { id } = useParams(); const navigate = useNavigate(); const ui = useGlobalContext(); const uiRef = useRef(ui); uiRef.current = ui;

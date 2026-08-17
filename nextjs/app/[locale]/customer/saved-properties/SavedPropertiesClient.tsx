@@ -1,0 +1,53 @@
+'use client';
+
+import { useCallback, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Card } from '@astryxdesign/core/Card';
+import { Heading } from '@astryxdesign/core/Heading';
+import { Text } from '@astryxdesign/core/Text';
+import PropertyCard, { type PropertyCardItem } from '../../../../components/property/PropertyCard';
+import type { Locale } from '../../../../i18n/config';
+import { getCustomerToken } from '../../../../lib/auth';
+import { loadSavedPropertyIds, SAVED_PROPERTIES_CHANGED } from '../../../../lib/savedProperties';
+
+export default function SavedPropertiesClient({ locale }: { locale: Locale }) {
+    const [properties, setProperties] = useState<PropertyCardItem[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const router = useRouter();
+    const vi = locale === 'vi';
+
+    const load = useCallback(async () => {
+        const token = getCustomerToken();
+        if (!token) {
+            router.replace(`/${locale}/customer/login?redirect=${encodeURIComponent(`/${locale}/customer/saved-properties`)}`);
+            return;
+        }
+        try {
+            const response = await fetch('/api/saved-properties', { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error ?? result.message);
+            setProperties(Array.isArray(result.data) ? result.data : []);
+            await loadSavedPropertyIds(token, true);
+            setError('');
+        } catch {
+            setError(vi ? 'Không thể tải danh sách tin đã lưu.' : 'Could not load saved properties.');
+        } finally { setLoading(false); }
+    }, [locale, router, vi]);
+
+    useEffect(() => {
+        void load();
+        const sync = () => void load();
+        window.addEventListener(SAVED_PROPERTIES_CHANGED, sync);
+        return () => window.removeEventListener(SAVED_PROPERTIES_CHANGED, sync);
+    }, [load]);
+
+    return <main className="mx-auto w-full max-w-7xl px-4 py-10 md:px-8">
+        <Heading level={2}>{vi ? 'Tin bất động sản đã lưu' : 'Saved properties'}</Heading>
+        <Text type="supporting">{vi ? 'Danh sách yêu thích được đồng bộ với tài khoản của bạn.' : 'Saved properties are synced with your account.'}</Text>
+        {loading ? <Text>{vi ? 'Đang tải...' : 'Loading...'}</Text> : null}
+        {error ? <Card variant="red" padding={4} className="mt-6"><Text>{error}</Text></Card> : null}
+        {!loading && !error && properties.length ? <section className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">{properties.map((property) => <PropertyCard key={property.id} property={property} locale={locale} />)}</section> : null}
+        {!loading && !error && !properties.length ? <Card variant="muted" padding={4} className="mt-6"><Text>{vi ? 'Bạn chưa lưu tin bất động sản nào.' : 'You have not saved any properties yet.'}</Text></Card> : null}
+    </main>;
+}

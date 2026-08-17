@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Api\BaseApiController;
 use App\Models\OwnerApplication;
+use App\Models\AccountType;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -13,25 +14,40 @@ class OwnerApplicationController extends BaseApiController
 {
     public function show(Request $request): JsonResponse
     {
-        return $this->successResponse($request->user()->ownerApplication);
+        $applications = $request->user()->ownerApplications()->latest()->get();
+        return $this->successResponse([
+            'application' => $applications->first(),
+            'applications' => $applications,
+        ]);
     }
 
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
+            'owner_type' => ['required', 'string', 'exists:account_types,code'],
+            'tax_code' => ['nullable', 'required_if:owner_type,company', 'string', 'max:50', 'regex:/^[0-9-]+$/'],
+            'company_name' => ['nullable', 'required_if:owner_type,company', 'string', 'max:255'],
+            'company_address' => ['nullable', 'required_if:owner_type,company', 'string', 'max:500'],
+            'legal_representative' => ['nullable', 'required_if:owner_type,company', 'string', 'max:255'],
             'ownership_document' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:10240'],
             'note' => ['nullable', 'string', 'max:2000'],
         ]);
         $user = $request->user();
         if (! $user->isIdentityVerified()) return $this->forbiddenResponse('Bạn cần xác minh CCCD trước khi đăng tin bất động sản.');
-        $existing = OwnerApplication::query()->where('user_id', $user->id)->first();
+        $ownerType = AccountType::query()->where('code', $data['owner_type'])->where('is_active', true)->first();
+        if (! $ownerType || $ownerType->code === 'individual') return $this->validationErrorResponse('Vui lòng chọn hộ kinh doanh, môi giới hoặc công ty.');
+        $existing = OwnerApplication::query()->where('user_id', $user->id)->where('owner_type', $ownerType->code)->first();
         if ($existing?->status === 'approved') return $this->validationErrorResponse('Owner account is already approved.');
 
         $directory = "owner-applications/{$user->id}";
         if ($existing) {
             Storage::disk('local')->delete(array_filter([$existing->ownership_document_path]));
         }
-        $application = OwnerApplication::query()->updateOrCreate(['user_id' => $user->id], [
+        $application = OwnerApplication::query()->updateOrCreate(['user_id' => $user->id, 'owner_type' => $ownerType->code], [
+            'tax_code' => $data['tax_code'] ?? null,
+            'company_name' => $data['company_name'] ?? null,
+            'company_address' => $data['company_address'] ?? null,
+            'legal_representative' => $data['legal_representative'] ?? null,
             'status' => 'pending',
             'ownership_document_path' => $request->file('ownership_document')->store($directory, 'local'),
             'note' => $data['note'] ?? null, 'rejection_reason' => null, 'reviewed_by' => null, 'reviewed_at' => null,
@@ -43,7 +59,7 @@ class OwnerApplicationController extends BaseApiController
     {
         if (! $request->user()->isAdmin()) return $this->forbiddenResponse();
         $data = $request->validate(['status'=>['nullable','in:pending,approved,rejected'],'per_page'=>['nullable','integer','min:1','max:100']]);
-        $applications = OwnerApplication::query()->with('user:id,name,email')
+        $applications = OwnerApplication::query()->with(['user:id,name,email', 'user.detail'])
             ->when($data['status'] ?? null, fn($query,$status)=>$query->where('status',$status))
             ->latest()->paginate((int)($data['per_page'] ?? 20))->withQueryString();
         $counts = OwnerApplication::query()
@@ -77,7 +93,7 @@ class OwnerApplicationController extends BaseApiController
         DB::transaction(function () use ($application, $request, $data) {
             $application->update(['status'=>$data['status'],'rejection_reason'=>$data['rejection_reason'] ?? null,'reviewed_by'=>$request->user()->id,'reviewed_at'=>now()]);
             if ($data['status'] === 'approved') {
-                $application->user->syncRoles(['property_owner']);
+                $application->user->assignRole('property_owner');
             }
         });
         return $this->successResponse($application->fresh('user:id,name,email,account_type'));

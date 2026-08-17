@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Property;
 use App\Models\IdentityVerification;
+use App\Models\OwnerApplication;
 use App\Models\PropertyType;
 use App\Models\User;
 use App\Models\ViewingAppointment;
@@ -15,6 +16,24 @@ use Tests\TestCase;
 class ViewingAppointmentApiTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_approved_owner_keeps_customer_viewing_rights(): void
+    {
+        [, $viewer, $property] = $this->property();
+        OwnerApplication::query()->create([
+            'user_id' => $viewer->id,
+            'owner_type' => 'company',
+            'ownership_document_path' => 'test/company.pdf',
+            'status' => 'approved',
+        ]);
+
+        $this->actingAs($viewer, 'api')->postJson('/api/v1/viewing-appointments', [
+            'property_id' => $property->id,
+            'appointment_date' => now()->addDays(5)->toDateString(),
+            'start_time' => '14:00',
+            'end_time' => '15:00',
+        ])->assertCreated()->assertJsonPath('data.viewer_id', $viewer->id);
+    }
 
     public function test_viewer_can_request_a_viewing_and_owner_is_emailed(): void
     {

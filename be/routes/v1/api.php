@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\V1\PermissionController;
 use App\Http\Controllers\Api\V1\PostController;
 use App\Http\Controllers\Api\V1\PropertyController;
 use App\Http\Controllers\Api\V1\PropertyReviewController;
+use App\Http\Controllers\Api\V1\SavedPropertyController;
 use App\Http\Controllers\Api\V1\PropertyTypeController;
 use App\Http\Controllers\Api\V1\ProvinceController;
 use App\Http\Controllers\Api\V1\RoleController;
@@ -114,6 +115,9 @@ Route::get('/properties/{property}/reviews', [PropertyReviewController::class, '
 Route::post('/payments/momo/ipn', [WalletController::class, 'momoIpn'])->name('payments.momo.ipn');
 
 Route::group(['middleware' => ['auth:api', 'account.active']], function () {
+    Route::get('/saved-properties', [SavedPropertyController::class, 'index']);
+    Route::post('/saved-properties', [SavedPropertyController::class, 'store']);
+    Route::delete('/saved-properties/{property}', [SavedPropertyController::class, 'destroy']);
     Route::get('/identity-verification', [IdentityVerificationController::class, 'show']);
     Route::get('/admin/account-types', [AccountTypeController::class, 'index']);
     Route::post('/admin/account-types', [AccountTypeController::class, 'store']);

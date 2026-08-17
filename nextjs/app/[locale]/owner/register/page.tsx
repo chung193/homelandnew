@@ -1,52 +1,77 @@
 'use client';
 
-import { ChangeEvent, FormEvent, useEffect, useRef, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { Button } from '@astryxdesign/core/Button';
 import { Card } from '@astryxdesign/core/Card';
 import { Heading } from '@astryxdesign/core/Heading';
 import { Text } from '@astryxdesign/core/Text';
-import { VStack } from '@astryxdesign/core/VStack';
 import { getCustomerToken } from '../../../../lib/auth';
 
-type Preview = { url: string; type: string; name: string };
-type Application = { status?: 'pending'|'approved'|'rejected'; rejection_reason?: string|null };
-type WalletResponse = { data?: { balance?: number; posting_fee?: number; test_posting_credits?: number } };
-
-function FilePreview({ preview }: { preview?: Preview }) {
-    if (!preview) return null;
-    if (preview.type === 'application/pdf') return <div className="mt-2 rounded-lg border p-3 text-sm">📄 {preview.name}</div>;
-    return <Image src={preview.url} alt={preview.name} width={640} height={192} unoptimized className="mt-2 h-48 w-full rounded-xl border object-contain" />;
-}
+type Application = { id: number; status: 'pending' | 'approved' | 'rejected'; owner_type: string; rejection_reason?: string | null };
+const labels: Record<string, string> = { household_business: 'Hộ kinh doanh / chủ hộ', broker: 'Môi giới', company: 'Công ty' };
 
 export default function OwnerRegisterPage() {
-    const { locale='vi' }=useParams<{locale:string}>();
-    const router=useRouter();
-    const [busy,setBusy]=useState(false);
-    const [message,setMessage]=useState('');
-    const [application,setApplication]=useState<Application|null>(null);
-    const [identityApproved,setIdentityApproved]=useState(false);
-    const [previews,setPreviews]=useState<Record<string,Preview>>({});
-    const previewUrlsRef=useRef<string[]>([]);
+    const { locale = 'vi' } = useParams<{ locale: string }>();
+    const router = useRouter();
+    const [applications, setApplications] = useState<Application[]>([]);
+    const [identityApproved, setIdentityApproved] = useState(false);
+    const [ownerType, setOwnerType] = useState('');
+    const [busy, setBusy] = useState(false);
+    const [message, setMessage] = useState('');
 
-    useEffect(()=>{const id=window.setTimeout(async()=>{const token=getCustomerToken();if(!token)return;try{const [response,identityResponse]=await Promise.all([fetch('/api/owner-application',{headers:{Authorization:`Bearer ${token}`},cache:'no-store'}),fetch('/api/identity-verification',{headers:{Authorization:`Bearer ${token}`},cache:'no-store'})]);const result=await response.json();const identity=await identityResponse.json();if(response.ok)setApplication(result.data??null);setIdentityApproved(identityResponse.ok&&identity.data?.status==='approved')}catch{/* The API enforces verification on submit. */}},0);return()=>clearTimeout(id)},[]);
-    useEffect(()=>()=>{previewUrlsRef.current.forEach((url)=>URL.revokeObjectURL(url))},[]);
+    useEffect(() => {
+        const timer = setTimeout(async () => {
+            const token = getCustomerToken();
+            if (!token) return;
+            try {
+                const [ownerResponse, identityResponse] = await Promise.all([
+                    fetch('/api/owner-application', { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' }),
+                    fetch('/api/identity-verification', { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' }),
+                ]);
+                const ownerResult = await ownerResponse.json();
+                const identityResult = await identityResponse.json();
+                setApplications(Array.isArray(ownerResult.data?.applications) ? ownerResult.data.applications : []);
+                setIdentityApproved(identityResponse.ok && identityResult.data?.status === 'approved');
+            } catch { setMessage('Không thể tải trạng thái hồ sơ.'); }
+        }, 0);
+        return () => clearTimeout(timer);
+    }, []);
 
-    function previewFile(field:string,event:ChangeEvent<HTMLInputElement>){const file=event.target.files?.[0];setPreviews((current)=>{if(current[field])URL.revokeObjectURL(current[field].url);const next={...current};if(file){const url=URL.createObjectURL(file);previewUrlsRef.current.push(url);next[field]={url,type:file.type,name:file.name}}else delete next[field];return next})}
+    async function submit(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        const token = getCustomerToken();
+        if (!token) { router.push(`/${locale}/customer/login?redirect=/${locale}/owner/register`); return; }
+        setBusy(true); setMessage('');
+        try {
+            const response = await fetch('/api/owner-application', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: new FormData(event.currentTarget) });
+            const result = await response.json();
+            if (!response.ok) { setMessage(result.error ?? result.message ?? 'Không thể gửi hồ sơ.'); return; }
+            const application = result.data as Application;
+            setApplications((current) => [application, ...current.filter((item) => item.owner_type !== application.owner_type)]);
+            setOwnerType('');
+            event.currentTarget.reset();
+            setMessage('Đã gửi hồ sơ. Vui lòng chờ quản trị viên duyệt.');
+        } catch { setMessage('Không thể gửi hồ sơ.'); } finally { setBusy(false); }
+    }
 
-    async function submit(event:FormEvent<HTMLFormElement>){event.preventDefault();const token=getCustomerToken();if(!token){router.push(`/${locale}/customer/login?redirect=/${locale}/owner/register`);return}setBusy(true);setMessage('');try{const response=await fetch('/api/owner-application',{method:'POST',headers:{Authorization:`Bearer ${token}`},body:new FormData(event.currentTarget)});const result=await response.json();if(response.ok){setApplication(result.data);setMessage('Đã gửi hồ sơ. Vui lòng chờ quản trị viên duyệt.')}else setMessage(result.error??result.message??'Không thể gửi hồ sơ.')}catch{setMessage('Không thể gửi hồ sơ.')}finally{setBusy(false)}}
+    const approvedTypes = new Set(applications.filter((item) => item.status === 'approved').map((item) => item.owner_type));
+    return <main className="mx-auto w-full max-w-3xl px-4 py-10"><div className="space-y-5">
+        <Heading level={2}>Đăng ký thêm tư cách tài khoản</Heading>
+        <Text type="supporting">Tài khoản cá nhân và quyền xem/đặt lịch được giữ nguyên. Bạn có thể đăng ký đồng thời hộ kinh doanh, môi giới và công ty.</Text>
 
-    async function openPostProperty(){const token=getCustomerToken();if(!token){window.location.assign(new URL(`/${locale}/customer/login?redirect=${encodeURIComponent(`/${locale}/owner/properties/create`)}`,window.location.origin).toString());return}setBusy(true);setMessage('');try{const response=await fetch('/api/wallet',{headers:{Authorization:`Bearer ${token}`},cache:'no-store'});const result:WalletResponse=await response.json();const credits=result.data?.test_posting_credits??0;const balance=result.data?.balance??0;const postingFee=result.data?.posting_fee??Number.MAX_SAFE_INTEGER;const destination=response.ok&&(credits>0||balance>=postingFee)?`/${locale}/owner/properties/create`:`/${locale}/wallet`;window.location.assign(new URL(destination,window.location.origin).toString())}catch{setMessage('Không thể kiểm tra lượt đăng tin. Vui lòng thử lại.');setBusy(false)}}
+        {applications.length ? <div className="grid gap-3 sm:grid-cols-2">{applications.map((item) => <Card key={item.id} variant={item.status === 'approved' ? 'green' : item.status === 'rejected' ? 'red' : 'muted'} padding={4}><Heading level={4}>{labels[item.owner_type] ?? item.owner_type}</Heading><Text>{item.status === 'approved' ? 'Đã duyệt' : item.status === 'rejected' ? 'Bị từ chối' : 'Đang chờ duyệt'}</Text>{item.rejection_reason ? <Text>Lý do: {item.rejection_reason}</Text> : null}</Card>)}</div> : null}
 
-    const approved=application?.status==='approved';
-    return <main className="mx-auto w-full max-w-2xl px-4 py-10"><VStack gap={4}>
-        {application?.status?<Card variant={approved?'green':application.status==='rejected'?'red':'muted'} padding={4}><VStack gap={1}><Heading level={4}>Trạng thái hồ sơ: {approved?'Đã duyệt':application.status==='rejected'?'Bị từ chối':'Đang chờ duyệt'}</Heading>{application.rejection_reason?<Text>Lý do: {application.rejection_reason}</Text>:null}</VStack></Card>:null}
-        <Card variant="default" padding={5}><VStack gap={4}><Heading level={2}>Đăng ký tài khoản chủ bất động sản</Heading><Text type="supporting">Giấy tờ được lưu riêng tư và chỉ quản trị viên có quyền xem.</Text>
-        {!identityApproved?<Card variant="muted" padding={3}><VStack gap={2}><Text>Bạn cần xác minh CCCD trước khi gửi giấy tờ nhà đất.</Text><Button href={`/${locale}/customer/verify-identity?redirect=${encodeURIComponent(`/${locale}/owner/register`)}`} label="Xác minh CCCD" variant="primary"/></VStack></Card>:null}
-        {!approved&&identityApproved?<form onSubmit={submit} className="flex flex-col gap-4">
-            <label><Text>Giấy tờ chứng minh quyền sở hữu *</Text><input className="block w-full rounded-lg border p-2" name="ownership_document" type="file" accept="image/jpeg,image/png,application/pdf" required onChange={(event)=>previewFile('ownership',event)}/><FilePreview preview={previews.ownership}/></label>
-            <label><Text>Ghi chú</Text><textarea className="block w-full rounded-lg border p-2" name="note" rows={3}/></label><Button type="submit" variant="primary" label={application?.status==='rejected'?'Gửi lại hồ sơ':'Gửi hồ sơ xét duyệt'} isLoading={busy}/>
-        </form>:approved?<VStack gap={3}><Text>Hồ sơ của bạn đã được duyệt. Hệ thống sẽ ưu tiên dùng lượt đăng tin miễn phí trước.</Text><Button type="button" variant="primary" label="Đăng tin ngay" isLoading={busy} onClick={()=>void openPostProperty()}/><Button href={`/${locale}/wallet`} variant="secondary" label="Nạp tiền vào ví"/></VStack>:null}{message?<Text>{message}</Text>:null}</VStack></Card>
-    </VStack></main>;
+        {!identityApproved ? <Card variant="muted" padding={4}><Text>Bạn cần xác minh CCCD cá nhân trước khi đăng ký tư cách bổ sung.</Text><div className="mt-3"><Button href={`/${locale}/customer/verify-identity?redirect=${encodeURIComponent(`/${locale}/owner/register`)}`} label="Xác minh CCCD" variant="primary" /></div></Card> : null}
+
+        {identityApproved ? <Card variant="default" padding={5}><form onSubmit={submit} className="grid gap-4">
+            <label><Text>Đăng ký với tư cách *</Text><select className="block w-full rounded-lg border bg-transparent p-2" name="owner_type" value={ownerType} onChange={(event) => setOwnerType(event.target.value)} required><option value="" disabled>Chọn loại tài khoản muốn bổ sung</option>{Object.entries(labels).map(([value, label]) => <option key={value} value={value} disabled={approvedTypes.has(value)}>{label}{approvedTypes.has(value) ? ' (đã duyệt)' : ''}</option>)}</select></label>
+            {ownerType === 'company' ? <div className="grid gap-4 rounded-xl border p-4"><Heading level={4}>Thông tin công ty</Heading><label><Text>Tên công ty *</Text><input className="block w-full rounded-lg border p-2" name="company_name" required /></label><label><Text>Mã số thuế *</Text><input className="block w-full rounded-lg border p-2" name="tax_code" pattern="[0-9-]+" required /></label><label><Text>Địa chỉ trụ sở *</Text><input className="block w-full rounded-lg border p-2" name="company_address" required /></label><label><Text>Người đại diện pháp luật *</Text><input className="block w-full rounded-lg border p-2" name="legal_representative" required /></label></div> : null}
+            {ownerType ? <label><Text>{ownerType === 'company' ? 'Giấy đăng ký doanh nghiệp *' : ownerType === 'broker' ? 'Chứng chỉ môi giới *' : 'Giấy tờ hộ kinh doanh / quyền sở hữu *'}</Text><input className="block w-full rounded-lg border p-2" name="ownership_document" type="file" accept="image/jpeg,image/png,application/pdf" required /></label> : null}
+            <label><Text>Ghi chú</Text><textarea className="block w-full rounded-lg border p-2" name="note" rows={3} /></label>
+            <Button type="submit" variant="primary" label="Gửi hồ sơ xét duyệt" isLoading={busy} />
+        </form></Card> : null}
+        {applications.some((item) => item.status === 'approved') ? <Button href={`/${locale}/owner/properties/create`} label="Đăng tin bất động sản" variant="primary" /> : null}
+        {message ? <Text>{message}</Text> : null}
+    </div></main>;
 }

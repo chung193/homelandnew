@@ -35,6 +35,7 @@ export default function OwnerApplication() {
 
     const columns = [
         { field: 'id', headerName: 'ID', width: 80 },
+        { field: 'owner_type', headerName: 'Loại hồ sơ', width: 170, valueFormatter: (value) => ({ company: 'Công ty', broker: 'Môi giới', household_business: 'Hộ kinh doanh' }[value] || value) },
         { field: 'name', headerName: 'Người đăng ký', minWidth: 190, flex: 1, valueGetter: (_value, row) => row.user?.name || '' },
         { field: 'email', headerName: 'Email', minWidth: 220, flex: 1, valueGetter: (_value, row) => row.user?.email || '' },
         { field: 'status', headerName: 'Trạng thái', width: 130, renderCell: ({ value }) => <Chip size="small" color={statusColor[value] || 'default'} label={statusLabel[value] || value} /> },

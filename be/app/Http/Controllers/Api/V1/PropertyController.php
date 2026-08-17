@@ -42,7 +42,7 @@ class PropertyController extends BaseApiController
     public function store(PropertyStoreRequest $request): JsonResponse
     {
         $user = $request->user();
-        if (! $user->isAdmin() && (! $user->isIdentityVerified() || $user->ownerApplication?->status !== 'approved')) {
+        if (! $user->isAdmin() && (! $user->isIdentityVerified() || ! $user->ownerApplications()->where('status', 'approved')->exists())) {
             return $this->forbiddenResponse('An approved property owner account is required.');
         }
 

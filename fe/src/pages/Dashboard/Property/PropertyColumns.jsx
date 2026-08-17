@@ -1,4 +1,5 @@
 import { Button, Chip, Stack } from '@mui/material';
+import { formatToCurrency } from '../../../utils/common';
 
 const statusLabels = { pending: 'Chờ duyệt', published: 'Đã duyệt', archived: 'Từ chối/Lưu trữ', draft: 'Bản nháp', sold: 'Đã bán', rented: 'Đã thuê' };
 const statusColors = { pending: 'warning', published: 'success', archived: 'error', draft: 'default', sold: 'info', rented: 'info' };
@@ -55,7 +56,7 @@ const getColumns = (t, onApprove, onReject, onView) => [
         headerName: t('pages.property.table.price'),
         width: 140,
         editable: true,
-        valueFormatter: (value) => (value ? `${Number(value).toLocaleString('vi-VN')} đ` : '-'),
+        valueFormatter: (value) => (value ? formatToCurrency(value) : '-'),
     },
     {
         field: 'area',

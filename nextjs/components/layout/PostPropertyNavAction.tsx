@@ -1,0 +1,15 @@
+'use client';
+
+import { useRouter } from 'next/navigation';
+import { getCustomerToken } from '../../lib/auth';
+import type { Locale } from '../../i18n/config';
+
+export default function PostPropertyNavAction({ locale }: { locale: Locale }) {
+    const router = useRouter();
+    function open() {
+        const destination = `/${locale}/owner/properties/create`;
+        const token = getCustomerToken();
+        router.push(token ? destination : `/${locale}/customer/login?redirect=${encodeURIComponent(destination)}`);
+    }
+    return <button type="button" className="topbar-link shrink-0 rounded-lg px-3 py-2 text-sm font-medium" onClick={open}>{locale === 'vi' ? 'Đăng tin' : 'Post property'}</button>;
+}

@@ -1,296 +1,176 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import QRCode from 'qrcode';
 import { Badge } from '@astryxdesign/core/Badge';
-import { Button } from '@astryxdesign/core/Button';
 import { Card } from '@astryxdesign/core/Card';
 import { Heading } from '@astryxdesign/core/Heading';
-import { HStack } from '@astryxdesign/core/HStack';
 import { Text } from '@astryxdesign/core/Text';
-import { VStack } from '@astryxdesign/core/VStack';
+import PropertyGallery from '../../../../components/property/PropertyGallery';
+import PropertyViewCount from '../../../../components/property/PropertyViewCount';
+import PropertyBookingActions from '../../../../components/property/PropertyBookingActions';
+import PropertyContactCard from '../../../../components/property/PropertyContactCard';
+import PropertyDetailActions from '../../../../components/property/PropertyDetailActions';
+import PropertyCard, { type PropertyCardItem } from '../../../../components/property/PropertyCard';
+import ReviewPanel from '../../../../components/property/ReviewPanel';
 import { getMessages } from '../../../../i18n/messages';
 import { isLocale, type Locale } from '../../../../i18n/config';
-import ReviewPanel from './ReviewPanel';
-import PropertyGallery from './PropertyGallery';
-import {statusLabel} from '../../../../lib/displayLabels';
-import PropertyViewCount from './PropertyViewCount';
-import PropertyBookingActions from './PropertyBookingActions';
+import { formatPropertyArea, formatPropertyPrice } from '../../../../lib/propertyDisplay';
 
 type PropertyAttributes = {
-    title: string;
-    description: string | null;
-    address: string | null;
-    city: string | null;
-    district: string | null;
-    ward: string | null;
-    price: string | null;
-    area: string | null;
-    status: string;
-    'listing-type': string;
-    'price-unit': string;
-    'long-term-months'?: number | null;
-    'long-term-price'?: string | null;
-    'deposit-amount'?: string | null;
-    'featured-image'?: string | null;
-    'view-count'?: number;
+    title: string; description: string | null; address: string | null; 'address-detail'?: string | null;
+    city: string | null; district: string | null; ward: string | null; latitude?: string | null; longitude?: string | null;
+    price: string | null; area: string | null; status: string; 'listing-type': string; 'price-unit': string;
+    bedrooms?: number | null; bathrooms?: number | null; floor?: number | null; 'legal-info'?: string | null;
+    'long-term-months'?: number | null; 'long-term-price'?: string | null; 'deposit-amount'?: string | null;
+    'featured-image'?: string | null; 'view-count'?: number; created_at: string | null;
 };
 
-type PropertyDetailResponse = {
-    data?: {
-        id: string;
-        attributes: PropertyAttributes;
-        relationships?: {
-            amenities?: {
-                data?: Array<{
-                    id: string;
-                    type: string;
-                }>;
-            };
-            images?: {
-                data?: Array<{
-                    id: string;
-                    type: string;
-                }>;
-            };
-        };
-    };
-    included?: Array<{
-        id: string;
-        type: string;
-        attributes?: {
-            name?: string | null;
-            icon?: string | null;
-            description?: string | null;
-            url?: string | null;
-            'preview-url'?: string | null;
-        };
-    }>;
-};
+type IncludedEntry = { id: string; type: string; attributes?: { name?: string | null; icon?: string | null; description?: string | null; url?: string | null; 'preview-url'?: string | null; avatar?: string | null; phone?: string | null } };
+type Relationship = { data?: Array<{ id: string; type: string }> };
+type PropertyDetailResponse = { data?: { id: string; attributes: PropertyAttributes; relationships?: { amenities?: Relationship; images?: Relationship; owner?: { data?: { id: string; type: string } | null } } }; included?: IncludedEntry[] };
+type PageProps = { params: Promise<{ locale: string; id: string }> };
 
-type Params = Promise<{
-    locale: string;
-    id: string;
-}>;
-
-type PageProps = {
-    params: Params;
-};
-
-const API_BASE_URL =
-    process.env.BE_API_URL ??
-    process.env.NEXT_PUBLIC_BE_API_URL ??
-    'http://127.0.0.1:8000/api';
-
+const API_BASE_URL = process.env.BE_API_URL ?? process.env.NEXT_PUBLIC_BE_API_URL ?? 'http://127.0.0.1:8000/api';
 export const dynamic = 'force-dynamic';
 
-function getLocaleFormat(locale: Locale): string {
-    return locale === 'en' ? 'en-US' : 'vi-VN';
-}
-
-function formatPrice(locale: Locale, price: string | null, unit: string): string {
-    const messages = getMessages(locale);
-    if (!price) {
-        return messages.contact;
-    }
-
-    const parsed = Number(price);
-    if (Number.isNaN(parsed)) {
-        return `${price} ${messages.unitDisplay(unit)}`;
-    }
-
-    return `${parsed.toLocaleString(getLocaleFormat(locale))} ${messages.unitDisplay(unit)}`;
-}
-
-function formatArea(locale: Locale, area: string | null): string {
-    const messages = getMessages(locale);
-    if (!area) {
-        return messages.updating;
-    }
-
-    const parsed = Number(area);
-    if (Number.isNaN(parsed)) {
-        return `${area} m2`;
-    }
-
-    return `${parsed.toLocaleString(getLocaleFormat(locale))} m2`;
-}
-
 async function getPropertyDetail(id: string): Promise<PropertyDetailResponse> {
-    const response = await fetch(`${API_BASE_URL}/json-api/properties/${id}`, {
-        cache: 'no-store',
-    });
-
-    if (response.status === 404) {
-        return {};
-    }
-
-    if (!response.ok) {
-        throw new Error('Failed to load property detail.');
-    }
-
+    const response = await fetch(`${API_BASE_URL}/json-api/properties/${id}`, { cache: 'no-store' });
+    if (response.status === 404) return {};
+    if (!response.ok) throw new Error('Failed to load property detail.');
     return response.json();
+}
+
+async function getRelatedProperties(city: string | null, currentId: string): Promise<PropertyCardItem[]> {
+    if (!city) return [];
+    const response = await fetch(`${API_BASE_URL}/json-api/properties?city=${encodeURIComponent(city)}`, { cache: 'no-store' });
+    if (!response.ok) return [];
+    const payload = await response.json() as { data?: PropertyCardItem[] };
+    return (payload.data ?? []).filter((item) => item.id !== currentId);
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { locale, id } = await params;
     const activeLocale: Locale = isLocale(locale) ? locale : 'vi';
     const messages = getMessages(activeLocale);
-
     try {
-        const payload = await getPropertyDetail(id.replace(/[,.]+$/, ''));
-        const title = payload.data?.attributes.title;
+        const title = (await getPropertyDetail(id.replace(/[,.]+$/, ''))).data?.attributes.title;
+        return { title: title ? `${title} | Homelend` : messages.propertyDetailTitle, description: messages.siteDescription };
+    } catch { return { title: messages.propertyDetailTitle, description: messages.siteDescription }; }
+}
 
-        return {
-            title: title ? `${messages.propertyDetailTitle}: ${title}` : messages.propertyDetailTitle,
-            description: messages.siteDescription,
-        };
-    } catch {
-        return {
-            title: messages.propertyDetailTitle,
-            description: messages.siteDescription,
-        };
-    }
+function dateLabel(value: string | null, locale: Locale) {
+    if (!value) return locale === 'vi' ? 'Đang cập nhật' : 'Updating';
+    return new Intl.DateTimeFormat(locale === 'vi' ? 'vi-VN' : 'en-US', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(value));
+}
+
+function LocationIcon() {
+    return <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" className="mt-0.5 shrink-0 text-emerald-600"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><circle cx="12" cy="10" r="2.5" fill="none" stroke="currentColor" strokeWidth="2" /></svg>;
 }
 
 export default async function PropertyDetailPage({ params }: PageProps) {
     const { locale, id } = await params;
     const activeLocale: Locale = isLocale(locale) ? locale : 'vi';
+    const vi = activeLocale === 'vi';
     const messages = getMessages(activeLocale);
-
     const payload = await getPropertyDetail(id.replace(/[,.]+$/, ''));
     const property = payload.data;
-
-    if (!property) {
-        notFound();
-    }
+    if (!property) notFound();
 
     const attrs = property.attributes;
-    const location = [attrs.ward, attrs.district, attrs.city]
-        .filter((value) => Boolean(value))
-        .join(', ');
     const included = payload.included ?? [];
-
-    const amenityMap = new Map(
-        included
-            .filter((entry) => entry.type === 'amenities')
-            .map((entry) => [entry.id, entry.attributes]),
-    );
-
-    const amenities = (property.relationships?.amenities?.data ?? []).map((entry) => {
-        const attrsFromIncluded = amenityMap.get(entry.id);
-        return {
-            id: entry.id,
-            name: attrsFromIncluded?.name ?? null,
-            icon: attrsFromIncluded?.icon ?? null,
-        };
-    });
-
-    const imageMap = new Map(
-        included
-            .filter((entry) => entry.type === 'property-images')
-            .map((entry) => [entry.id, entry.attributes]),
-    );
-
-    const relationshipImages = (property.relationships?.images?.data ?? [])
-        .map((entry) => {
-            const attrsFromIncluded = imageMap.get(entry.id);
-            return {
-                id: entry.id,
-                url: attrsFromIncluded?.url ?? attrsFromIncluded?.['preview-url'] ?? null,
-            };
+    const fullAddress = [attrs['address-detail'], attrs.address, attrs.ward, attrs.district, attrs.city].filter(Boolean).join(', ');
+    const mapLocation = [attrs.ward, attrs.district, attrs.city].filter(Boolean).join(', ');
+    const includedByKey = new Map(included.map((entry) => [`${entry.type}:${entry.id}`, entry]));
+    const images = (property.relationships?.images?.data ?? []).map((entry) => {
+        const item = includedByKey.get(`${entry.type}:${entry.id}`);
+        return { id: entry.id, url: item?.attributes?.url ?? item?.attributes?.['preview-url'] ?? null };
+    }).filter((image) => image.url);
+    const imageUrls = [...(attrs['featured-image'] ? [{ id: 'featured', url: attrs['featured-image'] }] : []), ...images]
+        .filter((item, index, list) => list.findIndex((candidate) => candidate.url === item.url) === index);
+    const amenities = (property.relationships?.amenities?.data ?? []).map((entry) => includedByKey.get(`${entry.type}:${entry.id}`)).filter(Boolean) as IncludedEntry[];
+    const ownerRelation = property.relationships?.owner?.data;
+    const owner = ownerRelation ? includedByKey.get(`${ownerRelation.type}:${ownerRelation.id}`)?.attributes : undefined;
+    const publicSiteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000').replace(/\/$/, '');
+    const propertyUrl = `${publicSiteUrl}/${activeLocale}/property/${property.id}`;
+    const qrDataUrl = await QRCode.toDataURL(propertyUrl, { width: 180, margin: 1, errorCorrectionLevel: 'M' });
+    const relatedProperties = (await getRelatedProperties(attrs.city, property.id))
+        .sort((left, right) => {
+            const leftWard = left.attributes.ward === attrs.ward ? 1 : 0;
+            const rightWard = right.attributes.ward === attrs.ward ? 1 : 0;
+            const leftDistrict = left.attributes.district === attrs.district ? 1 : 0;
+            const rightDistrict = right.attributes.district === attrs.district ? 1 : 0;
+            return (rightWard * 2 + rightDistrict) - (leftWard * 2 + leftDistrict);
         })
-        .filter((image) => Boolean(image.url));
+        .slice(0, 6);
+    const characteristics = [
+        [messages.areaLabel, formatPropertyArea(activeLocale, attrs.area)],
+        [vi ? 'Phòng ngủ' : 'Bedrooms', attrs.bedrooms],
+        [vi ? 'Phòng tắm' : 'Bathrooms', attrs.bathrooms],
+        [vi ? 'Tầng' : 'Floor', attrs.floor],
+        [vi ? 'Pháp lý' : 'Legal information', attrs['legal-info']],
+    ].filter(([, value]) => value !== null && value !== undefined && value !== '');
 
-    const featuredImage = attrs['featured-image'];
-    const imageUrls = [
-        ...(featuredImage ? [{ id: 'featured', url: featuredImage }] : []),
-        ...relationshipImages,
-    ].filter((item, index, self) => self.findIndex((candidate) => candidate.url === item.url) === index);
+    return <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 md:px-8 md:py-10">
+        <div className="mb-5 flex flex-wrap items-center gap-2 text-sm opacity-70"><Link href={`/${activeLocale}`} className="hover:text-emerald-600">{vi ? 'Trang chủ' : 'Home'}</Link><span>/</span><span>{attrs['listing-type'] === 'rent' ? messages.listingRent : messages.listingSale}</span><span>/</span><span>{attrs.city || messages.updating}</span></div>
 
-    return (
-        <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-8 md:px-8 md:py-12">
-            <VStack gap={4}>
-                <HStack justify="between" align="center" gap={3} wrap="wrap">
-                    <Heading level={2}>{messages.propertyDetailTitle}</Heading>
-                    <Button href={`/${activeLocale}`} label={messages.backToList} variant="secondary" />
-                </HStack>
+        <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+            <div className="min-w-0 space-y-6">
+                {imageUrls.length ? <PropertyGallery images={imageUrls} title={attrs.title} /> : <div className="grid h-80 place-items-center rounded-2xl bg-zinc-100 dark:bg-zinc-900"><Text type="supporting">{messages.updating}</Text></div>}
 
-                <Card variant="default" padding={4} elevation="low">
-                    <VStack gap={2}>
-                        <Heading level={4}>{messages.photosTitle}</Heading>
-                        {imageUrls.length > 0 ? (
-                            <PropertyGallery images={imageUrls} title={attrs.title}/>
-                        ) : (
-                            <Text type="supporting">{messages.updating}</Text>
-                        )}
-                    </VStack>
-                </Card>
+                <section className="border-b pb-6">
+                    <div className="flex items-start justify-between gap-4 py-3 sm:py-5"><div className="min-w-0"><div className="mb-3"><Badge variant={attrs['listing-type'] === 'sale' ? 'success' : 'warning'} label={attrs['listing-type'] === 'sale' ? messages.listingSale : messages.listingRent} /></div><h1 className="max-w-3xl text-pretty text-2xl font-bold leading-tight text-foreground sm:text-3xl">{attrs.title}</h1></div><PropertyDetailActions property={property} locale={activeLocale} /></div>
+                    <div className="mt-3 flex items-start gap-2 text-sm"><LocationIcon /><Text type="supporting">{fullAddress || messages.updating}</Text></div>
+                    <div className="mt-5 flex flex-wrap items-end gap-x-12 gap-y-3 border-t pt-5">
+                        <div><Text type="supporting">{messages.priceLabel}</Text><div className="text-xl font-bold text-emerald-600">{formatPropertyPrice(activeLocale, attrs.price, attrs['price-unit'])}</div></div>
+                        <div className="min-w-28"><span className="block text-sm leading-5 text-zinc-500 dark:text-zinc-400">{messages.areaLabel}</span><strong className="mt-1 block text-lg font-semibold leading-6 text-foreground">{formatPropertyArea(activeLocale, attrs.area)}</strong></div>
+                        <PropertyViewCount propertyId={property.id} initialViews={attrs['view-count'] ?? 0} locale={activeLocale} />
+                    </div>
+                </section>
 
-                <Card variant="default" padding={4} elevation="low">
-                    <VStack gap={3}>
-                        <HStack justify="between" align="start" gap={2}>
-                            <Heading level={3}>{attrs.title}</Heading>
-                            <Link href={`/${activeLocale}?listing_type=${attrs['listing-type']}`}>
-                                <Badge
-                                    variant={attrs['listing-type'] === 'sale' ? 'success' : 'warning'}
-                                    label={attrs['listing-type'] === 'sale' ? messages.listingSale : messages.listingRent}
-                                />
-                            </Link>
-                        </HStack>
+                <section className="border-b pb-6"><Heading level={3}>{vi ? 'Thông tin mô tả' : 'Description'}</Heading>{attrs.description ? <div className="property-description mt-4 whitespace-pre-line leading-7" dangerouslySetInnerHTML={{ __html: attrs.description }} /> : <Text type="supporting">{messages.noDescription}</Text>}</section>
 
-                        <PropertyViewCount propertyId={property.id} initialViews={attrs['view-count'] ?? 0}/>
+                <section><Heading level={3}>{vi ? 'Đặc điểm bất động sản' : 'Property features'}</Heading><div className="mt-4 grid gap-x-8 sm:grid-cols-2">{characteristics.map(([label, value]) => <div key={String(label)} className="flex justify-between gap-4 border-b py-4"><strong>{label}</strong><span className="text-right">{value}</span></div>)}</div></section>
 
-                        {attrs.description ? <div className="property-description text-zinc-600 dark:text-zinc-300" dangerouslySetInnerHTML={{__html: attrs.description}}/> : <Text type="supporting">{messages.noDescription}</Text>}
+                {amenities.length ? <section><Heading level={3}>{messages.amenitiesTitle}</Heading><div className="mt-4 flex flex-wrap gap-2">{amenities.map((amenity) => <Badge key={amenity.id} variant="info" label={`${amenity.attributes?.icon ?? ''} ${amenity.attributes?.name ?? amenity.id}`.trim()} />)}</div></section> : null}
 
-                        <VStack gap={1}>
-                            <Text>
-                                <strong>{messages.priceLabel}:</strong> {formatPrice(activeLocale, attrs.price, attrs['price-unit'])}
-                            </Text>
-                            <Text>
-                                <strong>{messages.areaLabel}:</strong> {formatArea(activeLocale, attrs.area)}
-                            </Text>
-                            <Text>
-                                <strong>{messages.locationLabel}:</strong> {location || attrs.address || messages.updating}
-                            </Text>
-                            <Text>
-                                <strong>{messages.statusLabel}:</strong> {statusLabel(attrs.status,activeLocale)}
-                            </Text>
-                        </VStack>
-                    </VStack>
-                </Card>
+                {mapLocation ? <section>
+                    <div className="flex flex-wrap items-center justify-between gap-3"><Heading level={3}>{vi ? 'Vị trí trên bản đồ' : 'Location on map'}</Heading><a href={`https://www.google.com/maps?q=${encodeURIComponent(mapLocation)}`} target="_blank" rel="noreferrer" className="text-sm font-semibold text-emerald-600 hover:underline">{vi ? 'Mở Google Maps ↗' : 'Open Google Maps ↗'}</a></div>
+                    <div className="mt-4 overflow-hidden rounded-2xl border bg-zinc-100 shadow-sm dark:bg-zinc-900">
+                        <iframe
+                            src={`https://www.google.com/maps?q=${encodeURIComponent(mapLocation)}&z=14&output=embed`}
+                            title={vi ? `Bản đồ vị trí ${attrs.title}` : `Map location of ${attrs.title}`}
+                            className="h-80 w-full border-0 sm:h-96"
+                            loading="lazy"
+                            referrerPolicy="no-referrer-when-downgrade"
+                            allowFullScreen
+                        />
+                    </div>
+                    <div className="mt-3 flex items-start gap-2 text-sm"><LocationIcon /><Text type="supporting">{mapLocation}</Text></div>
+                </section> : null}
 
-                <Card variant="default" padding={4} elevation="low">
-                    <VStack gap={2}>
-                        <Heading level={4}>{messages.amenitiesTitle}</Heading>
-                        {amenities.length > 0 ? (
-                            <HStack align="center" gap={2} wrap="wrap">
-                                {amenities.map((amenity) => (
-                                    <Badge
-                                        key={amenity.id}
-                                        variant="info"
-                                        label={amenity.icon ? `${amenity.icon} ${amenity.name ?? amenity.id}` : amenity.name ?? amenity.id}
-                                    />
-                                ))}
-                            </HStack>
-                        ) : (
-                            <Text type="supporting">{messages.noAmenities}</Text>
-                        )}
-                    </VStack>
-                </Card>
+                <section className="grid grid-cols-2 items-start gap-x-5 gap-y-6 border-y py-5 text-sm sm:grid-cols-4 lg:grid-cols-[repeat(4,minmax(0,1fr))_auto]">
+                    <div className="grid min-w-0 gap-1.5"><Text type="supporting">{vi ? 'Ngày đăng' : 'Posted'}</Text><strong className="block leading-5">{dateLabel(attrs.created_at, activeLocale)}</strong></div>
+                    <div className="grid min-w-0 gap-1.5"><Text type="supporting">{vi ? 'Loại tin' : 'Listing'}</Text><strong className="block leading-5">{attrs['listing-type'] === 'rent' ? messages.listingRent : messages.listingSale}</strong></div>
+                    <div className="grid min-w-0 gap-1.5"><Text type="supporting">{vi ? 'Mã tin' : 'ID'}</Text><strong className="block leading-5">{property.id}</strong></div>
+                    <div className="grid min-w-0 gap-1.5"><Text type="supporting">{vi ? 'Trạng thái' : 'Status'}</Text><strong className="block leading-5">{vi ? 'Đang hiển thị' : 'Published'}</strong></div>
+                    <div className="col-span-2 flex items-center gap-3 sm:col-span-4 lg:col-span-1 lg:row-span-2">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={qrDataUrl} alt={vi ? `Mã QR tin ${property.id}` : `QR code for listing ${property.id}`} className="size-24 rounded-lg border bg-white p-1" />
+                        <div className="lg:hidden"><strong className="block">{vi ? 'Quét mã để xem tin' : 'Scan to view'}</strong><span className="text-xs opacity-60">{vi ? 'Mở nhanh trên điện thoại' : 'Open on your phone'}</span></div>
+                    </div>
+                </section>
 
-                <Card variant="default" padding={4} elevation="low">
-                    <VStack gap={3}>
-                        <Heading level={4}>{activeLocale === 'vi' ? 'Bạn quan tâm bất động sản này?' : 'Interested in this property?'}</Heading>
-                        <Text type="supporting">{activeLocale === 'vi' ? 'Chọn nhu cầu để chuyển sang màn hình đặt lịch riêng.' : 'Choose an option to continue on a dedicated booking page.'}</Text>
-                        <PropertyBookingActions locale={activeLocale} propertyId={property.id} canRent={attrs['listing-type'] === 'rent'} />
-                    </VStack>
-                </Card>
-                <ReviewPanel
-                    locale={activeLocale}
-                    propertyId={property.id}
-                    listingType={attrs['listing-type']}
-                />
-            </VStack>
-        </main>
-    );
+                <Card variant="default" padding={5}><Heading level={3}>{vi ? 'Bạn quan tâm bất động sản này?' : 'Interested in this property?'}</Heading><Text type="supporting">{vi ? 'Đặt lịch xem nhà hoặc gửi yêu cầu thuê trực tiếp cho chủ nhà.' : 'Schedule a viewing or send a rental request.'}</Text><div className="mt-4"><PropertyBookingActions locale={activeLocale} propertyId={property.id} canRent={attrs['listing-type'] === 'rent'} /></div></Card>
+                {relatedProperties.length ? <section>
+                    <Heading level={3}>{vi ? 'Bất động sản liên quan' : 'Related properties'}</Heading>
+                    <Text type="supporting">{vi ? `Tin cùng ${attrs.city}, ưu tiên khu vực lân cận.` : `Listings in ${attrs.city}, with nearby areas first.`}</Text>
+                    <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">{relatedProperties.map((item) => <PropertyCard key={item.id} property={item} locale={activeLocale} />)}</div>
+                </section> : null}
+                <ReviewPanel locale={activeLocale} propertyId={property.id} listingType={attrs['listing-type']} />
+            </div>
+
+            <aside><PropertyContactCard owner={owner} locale={activeLocale} /></aside>
+        </div>
+    </main>;
 }

@@ -57,6 +57,7 @@ export default function HeroSlider({ locale }: HeroSliderProps) {
     const [provinceCode, setProvinceCode] = useState(searchParams.get('province_code') ?? '');
     const [wardCode, setWardCode] = useState(searchParams.get('ward_code') ?? '');
     const [propertyTypeId, setPropertyTypeId] = useState(searchParams.get('property_type_id') ?? '');
+    const [listingType, setListingType] = useState(searchParams.get('listing_type') ?? '');
     const [provinces, setProvinces] = useState<OptionItem[]>([]);
     const [wards, setWards] = useState<OptionItem[]>([]);
     const [propertyTypes, setPropertyTypes] = useState<OptionItem[]>([]);
@@ -71,6 +72,7 @@ export default function HeroSlider({ locale }: HeroSliderProps) {
             setProvinceCode(currentParams.get('province_code') ?? '');
             setWardCode(currentParams.get('ward_code') ?? '');
             setPropertyTypeId(currentParams.get('property_type_id') ?? '');
+            setListingType(currentParams.get('listing_type') ?? '');
         },0);
         return()=>window.clearTimeout(timer);
     }, [searchParamString]);
@@ -148,6 +150,9 @@ export default function HeroSlider({ locale }: HeroSliderProps) {
         if (propertyTypeId) {
             params.set('property_type_id', propertyTypeId);
         }
+        if (listingType === 'sale' || listingType === 'rent') {
+            params.set('listing_type', listingType);
+        }
 
         params.set('page', '1');
         router.push(`${pathname}?${params.toString()}`);
@@ -158,6 +163,7 @@ export default function HeroSlider({ locale }: HeroSliderProps) {
         setProvinceCode('');
         setWardCode('');
         setPropertyTypeId('');
+        setListingType('');
         router.push(`${pathname}?page=1`);
     }
 
@@ -172,11 +178,12 @@ export default function HeroSlider({ locale }: HeroSliderProps) {
         selectedProvince?.name ?? null,
         selectedWard?.name ?? null,
         selectedPropertyType?.name ?? null,
+        listingType === 'sale' ? messages.listingSale : listingType === 'rent' ? messages.listingRent : null,
     ].filter((item): item is string => Boolean(item));
 
     return (
         <VStack gap={3}>
-            <section className="hero-slider-shell relative min-h-[620px] overflow-hidden rounded-2xl border md:min-h-[420px]">
+            <section className="hero-slider-shell relative min-h-[720px] w-full overflow-hidden border-y sm:min-h-[620px] md:min-h-[520px] xl:min-h-[480px]">
                 <img
                     src={activeSlide.src}
                     alt={activeSlide.title}
@@ -189,9 +196,9 @@ export default function HeroSlider({ locale }: HeroSliderProps) {
                 <div className="absolute inset-x-0 top-0 p-4 md:p-6">
                     <form
                         onSubmit={handleSearch}
-                        className="hero-search-panel mx-auto flex w-full max-w-5xl flex-col gap-3 rounded-2xl border p-4 text-white backdrop-blur md:flex-row md:items-end"
+                        className="hero-search-panel mx-auto grid w-full max-w-7xl grid-cols-1 gap-3 rounded-2xl border p-4 text-white backdrop-blur sm:grid-cols-2 xl:grid-cols-12 xl:items-end"
                     >
-                        <label className="flex flex-1 flex-col gap-1">
+                        <label className="flex min-w-0 flex-col gap-1 sm:col-span-2 xl:col-span-3">
                             <Text color="inherit">{messages.searchPlaceholder}</Text>
                             <input
                                 value={keyword}
@@ -201,11 +208,11 @@ export default function HeroSlider({ locale }: HeroSliderProps) {
                             />
                         </label>
 
-                        <label className="flex min-w-[170px] flex-col gap-1">
+                        <label className="flex min-w-0 flex-col gap-1 xl:col-span-2">
                             <Text color="inherit">{messages.searchProvinceLabel}</Text>
                             <select
                                 value={provinceCode}
-                                onChange={(event) => setProvinceCode(event.target.value)}
+                                onChange={(event) => { setProvinceCode(event.target.value); setWardCode(''); }}
                                 className="hero-search-input select-soft h-10 border px-2 text-sm outline-none"
                             >
                                 <option value="">{messages.searchAllOption}</option>
@@ -217,7 +224,7 @@ export default function HeroSlider({ locale }: HeroSliderProps) {
                             </select>
                         </label>
 
-                        <label className="flex min-w-[170px] flex-col gap-1">
+                        <label className="flex min-w-0 flex-col gap-1 xl:col-span-2">
                             <Text color="inherit">{messages.searchCityLabel}</Text>
                             <select
                                 value={wardCode}
@@ -236,7 +243,7 @@ export default function HeroSlider({ locale }: HeroSliderProps) {
                             </select>
                         </label>
 
-                        <label className="flex min-w-[170px] flex-col gap-1">
+                        <label className="flex min-w-0 flex-col gap-1 xl:col-span-2">
                             <Text color="inherit">{messages.searchPropertyTypeLabel}</Text>
                             <select
                                 value={propertyTypeId}
@@ -252,10 +259,19 @@ export default function HeroSlider({ locale }: HeroSliderProps) {
                             </select>
                         </label>
 
-                        <div className="grid grid-cols-2 gap-2 md:flex md:shrink-0">
-                            <Button className="h-10 min-w-24 whitespace-nowrap" label={messages.searchButton} variant="primary" type="submit" />
+                        <label className="flex min-w-0 flex-col gap-1 xl:col-span-1">
+                            <Text color="inherit">{messages.statusLabel}</Text>
+                            <select value={listingType} onChange={(event)=>setListingType(event.target.value)} className="hero-search-input select-soft h-10 border px-2 text-sm outline-none">
+                                <option value="">{messages.searchAllOption}</option>
+                                <option value="sale">{messages.listingSale}</option>
+                                <option value="rent">{messages.listingRent}</option>
+                            </select>
+                        </label>
+
+                        <div className="grid min-w-0 grid-cols-2 gap-2 sm:col-span-2 xl:col-span-2">
+                            <Button className="h-10 min-w-0 whitespace-nowrap px-2" label={messages.searchButton} variant="primary" type="submit" />
                             <Button
-                                className="h-10 min-w-24 whitespace-nowrap !border-white !bg-white !text-zinc-900 hover:!bg-zinc-100"
+                                className="h-10 min-w-0 whitespace-nowrap px-2 !border-white !bg-white !text-zinc-900 hover:!bg-zinc-100"
                                 label={messages.searchResetButton}
                                 variant="secondary"
                                 type="button"
@@ -309,12 +325,14 @@ export default function HeroSlider({ locale }: HeroSliderProps) {
             </section>
 
             {activeFilters.length > 0 ? (
-                <HStack align="center" gap={2} wrap="wrap">
-                    <Text type="supporting">{messages.activeFiltersLabel}:</Text>
-                    {activeFilters.map((filterValue) => (
-                        <Badge key={`active-filter-${filterValue}`} variant="info" label={filterValue} />
-                    ))}
-                </HStack>
+                <div className="mx-auto w-full max-w-7xl px-4 md:px-8">
+                    <HStack align="center" gap={2} wrap="wrap">
+                        <Text type="supporting">{messages.activeFiltersLabel}:</Text>
+                        {activeFilters.map((filterValue) => (
+                            <Badge key={`active-filter-${filterValue}`} variant="info" label={filterValue} />
+                        ))}
+                    </HStack>
+                </div>
             ) : null}
         </VStack>
     );
