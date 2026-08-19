@@ -5,7 +5,7 @@ import { HStack } from '@astryxdesign/core/HStack';
 import { Text } from '@astryxdesign/core/Text';
 import { VStack } from '@astryxdesign/core/VStack';
 import { isLocale, type Locale } from '../../../../../i18n/config';
-import BookingPanel from '../BookingPanel';
+import BookingPanel from '../../../../../components/property/BookingPanel';
 
 type Attributes={title:string;'listing-type':string;price:string|null;'price-unit':string;'long-term-months'?:number|null;'long-term-price'?:string|null;'deposit-amount'?:string|null};
 const API = process.env.BE_API_URL ?? process.env.NEXT_PUBLIC_BE_API_URL ?? 'http://127.0.0.1:8000/api';

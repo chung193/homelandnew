@@ -300,14 +300,14 @@ const PropertyAddModal = ({ onSubmit, onClose, showFullCreateButton = true, init
                     />
                 </Stack>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                    <TextField label={t('pages.property.form.price')} type="number" fullWidth size="small" {...register('price')} />
+                    <TextField label={t('pages.property.form.price')} type="number" fullWidth size="small" inputProps={{ min: 0, step: 1000 }} {...register('price')} />
                     <TextField label={t('pages.property.form.priceUnit')} select fullWidth size="small" defaultValue={normalizePriceUnit(initialData?.price_unit||'month')} {...register('price_unit')}><MenuItem value="month">Tháng</MenuItem><MenuItem value="day">Ngày</MenuItem><MenuItem value="night">Đêm</MenuItem><MenuItem value="total">Tổng giá bán</MenuItem><MenuItem value="m2">Theo m²</MenuItem></TextField>
                 </Stack>
                 <TextField label="Thông tin pháp lý" fullWidth multiline minRows={2} size="small" {...register('legal_info')} />
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                     <TextField label="Ưu đãi khi thuê từ (tháng)" type="number" fullWidth size="small" inputProps={{ min: 2 }} {...register('long_term_months')} helperText="Ví dụ: từ 6 tháng" />
-                    <TextField label="Giá ưu đãi mỗi tháng" type="number" fullWidth size="small" inputProps={{ min: 0 }} {...register('long_term_price')} />
-                    <TextField label="Tiền đặt cọc (tùy chọn)" type="number" fullWidth size="small" inputProps={{ min: 0 }} {...register('deposit_amount')} />
+                    <TextField label="Giá ưu đãi mỗi tháng" type="number" fullWidth size="small" inputProps={{ min: 0, step: 1000 }} {...register('long_term_price')} />
+                    <TextField label="Tiền đặt cọc (tùy chọn)" type="number" fullWidth size="small" inputProps={{ min: 0, step: 1000 }} {...register('deposit_amount')} />
                 </Stack>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                     <TextField label={t('pages.property.form.area')} type="number" fullWidth size="small" {...register('area')} />

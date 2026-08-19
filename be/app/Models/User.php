@@ -8,6 +8,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\MediaLibrary\HasMedia;
@@ -105,6 +106,11 @@ class User extends Authenticatable implements HasMedia, JWTSubject, MustVerifyEm
         return $this->hasMany(Property::class);
     }
 
+    public function savedProperties(): BelongsToMany
+    {
+        return $this->belongsToMany(Property::class, 'saved_properties')->withTimestamps();
+    }
+
     public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class, 'customer_id');
@@ -117,7 +123,12 @@ class User extends Authenticatable implements HasMedia, JWTSubject, MustVerifyEm
 
     public function ownerApplication(): HasOne
     {
-        return $this->hasOne(OwnerApplication::class);
+        return $this->hasOne(OwnerApplication::class)->latestOfMany();
+    }
+
+    public function ownerApplications(): HasMany
+    {
+        return $this->hasMany(OwnerApplication::class);
     }
 
     public function identityVerification(): HasOne
@@ -127,11 +138,7 @@ class User extends Authenticatable implements HasMedia, JWTSubject, MustVerifyEm
 
     public function isIdentityVerified(): bool
     {
-        if ($this->identityVerification) {
-            return $this->identityVerification->status === 'approved';
-        }
-
-        return $this->ownerApplication?->status === 'approved';
+        return $this->identityVerification?->status === 'approved';
     }
 
     public function sendEmailVerificationNotification()

@@ -4,6 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\Amenity;
 use App\Models\PropertyType;
+use App\Models\Property;
+use App\Models\Province;
+use App\Models\Ward;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -11,6 +14,29 @@ use Tests\TestCase;
 class PropertyApiTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_public_property_search_applies_all_filters_and_rejects_invalid_locations(): void
+    {
+        $owner = User::factory()->create();
+        $type = PropertyType::create(['name'=>'Căn hộ','slug'=>'can-ho','is_active'=>true]);
+        $otherType = PropertyType::create(['name'=>'Biệt thự','slug'=>'biet-thu','is_active'=>true]);
+        $province = Province::create(['code'=>1,'name'=>'Hà Nội','is_active'=>true]);
+        $otherProvince = Province::create(['code'=>2,'name'=>'Đà Nẵng','is_active'=>true]);
+        $ward = Ward::create(['code'=>101,'province_code'=>1,'name'=>'Phường Ba Đình','is_active'=>true]);
+        Ward::create(['code'=>201,'province_code'=>2,'name'=>'Phường Hải Châu','is_active'=>true]);
+
+        Property::create(['user_id'=>$owner->id,'property_type_id'=>$type->id,'listing_type'=>'rent','title'=>'Căn hộ hồ Tây','slug'=>'can-ho-ho-tay','city'=>$province->name,'ward'=>$ward->name,'status'=>'published','is_active'=>true,'is_deleted'=>false]);
+        Property::create(['user_id'=>$owner->id,'property_type_id'=>$otherType->id,'listing_type'=>'sale','title'=>'Biệt thự Đà Nẵng','slug'=>'biet-thu-da-nang','city'=>$otherProvince->name,'ward'=>'Phường Hải Châu','status'=>'published','is_active'=>true,'is_deleted'=>false]);
+
+        $query = http_build_query(['q'=>'hồ Tây','province_code'=>1,'ward_code'=>101,'property_type_id'=>$type->id,'listing_type'=>'rent']);
+        $this->getJson('/api/json-api/properties?'.$query)
+            ->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.attributes.title', 'Căn hộ hồ Tây');
+
+        $this->getJson('/api/json-api/properties?province_code=999999')
+            ->assertOk()->assertJsonCount(0, 'data')->assertJsonPath('meta.total', 0);
+        $this->getJson('/api/json-api/properties?province_code=1&ward_code=201')
+            ->assertOk()->assertJsonCount(0, 'data')->assertJsonPath('meta.total', 0);
+    }
 
     public function test_property_type_and_amenity_lookups_are_available_without_authentication(): void
     {

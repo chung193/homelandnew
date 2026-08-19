@@ -5,8 +5,8 @@ import { Heading } from '@astryxdesign/core/Heading';
 import { HStack } from '@astryxdesign/core/HStack';
 import { Text } from '@astryxdesign/core/Text';
 import { VStack } from '@astryxdesign/core/VStack';
-import HeroSlider from './HeroSlider';
-import PropertyInfiniteList from './PropertyInfiniteList';
+import HeroSlider from '../../components/home/HeroSlider';
+import PropertyInfiniteList from '../../components/property/PropertyInfiniteList';
 import { getMessages } from '../../i18n/messages';
 import { isLocale, locales, type Locale } from '../../i18n/config';
 
@@ -22,6 +22,7 @@ type PropertyAttributes = {
     status: string;
     'listing-type': string;
     'price-unit': string;
+    created_at: string | null;
 };
 
 type PropertyItem = {
@@ -156,10 +157,9 @@ export default async function LocaleHomePage({ params, searchParams }: PageProps
 
     return (
         <>
+            <HeroSlider locale={activeLocale} />
             <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 py-8 md:px-8 md:py-12">
                 <VStack gap={4}>
-                    <HeroSlider locale={activeLocale} />
-
                     <HStack justify="between" align="center" gap={3} wrap="wrap">
                         <VStack gap={1}>
                             <Heading level={1}>{messages.heroTitle}</Heading>
@@ -181,6 +181,7 @@ export default async function LocaleHomePage({ params, searchParams }: PageProps
 
                     {!errorMessage ? (
                         <PropertyInfiniteList
+                            key={filterParams.toString()}
                             locale={activeLocale}
                             initialProperties={properties}
                             initialCurrentPage={currentPage}

@@ -33,10 +33,12 @@ export function dataToFormData(data) {
 }
 
 export const formatToCurrency = (amount) => {
+    const roundedAmount = Math.round(Number(amount || 0) / 1000) * 1000
     return new Intl.NumberFormat('vi-VN', {
         style: 'currency',
-        currency: 'VND'
-    }).format(amount)
+        currency: 'VND',
+        maximumFractionDigits: 0
+    }).format(roundedAmount)
 }
 
 

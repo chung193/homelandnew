@@ -104,6 +104,10 @@ class BookingController extends BaseApiController
             return $this->validationErrorResponse('This property is not active for booking');
         }
 
+        if ((int) $property->user_id === (int) $user->id) {
+            return $this->validationErrorResponse('You cannot rent your own property');
+        }
+
         $startDate = CarbonImmutable::parse($data['start_date'])->startOfDay();
         $endDate = CarbonImmutable::parse($data['end_date'])->startOfDay();
         $nights = $startDate->diffInDays($endDate);

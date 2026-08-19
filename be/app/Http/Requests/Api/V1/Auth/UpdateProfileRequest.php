@@ -24,7 +24,7 @@ class UpdateProfileRequest extends FormRequest
                 'max:255',
                 Rule::unique('users', 'email')->ignore($userId),
             ],
-            'phone' => ['nullable', 'string', 'max:30'],
+            'phone' => ['required', 'string', 'regex:/^(?:\+84|0)[0-9]{9}$/'],
             'address' => ['nullable', 'string', 'max:255'],
             'city' => ['nullable', 'string', 'max:100'],
             'birthday' => ['nullable', 'date', 'before:today'],

@@ -13,8 +13,8 @@ class IdentityVerificationController extends BaseApiController {
         return $this->successResponse(['status'=>$request->user()->isIdentityVerified()?'approved':($verification?->status??'unsubmitted'),'verification_type'=>$verification?->verification_type,'tax_code'=>$verification?->tax_code,'rejection_reason'=>$verification?->rejection_reason]);
     }
     public function store(Request $request):JsonResponse {
-        $base=$request->validate(['verification_type'=>['required','string','exists:account_types,code']]);
-        $type=AccountType::query()->where('code',$base['verification_type'])->where('is_active',true)->first();
+        $base=$request->validate(['verification_type'=>['required','in:individual']]);
+        $type=AccountType::query()->where('code','individual')->where('is_active',true)->first();
         if(!$type)return $this->validationErrorResponse('Loại tài khoản không hoạt động.');
         $data=$request->validate([
             'verification_type'=>['required','string'],
@@ -32,7 +32,6 @@ class IdentityVerificationController extends BaseApiController {
             'supporting_document_path'=>$request->file('supporting_document')?->store($directory,'local'),'tax_code'=>$data['tax_code']??null,
             'status'=>'pending','rejection_reason'=>null,'reviewed_by'=>null,'reviewed_at'=>null,
         ]);
-        $user->update(['account_type'=>$data['verification_type']]);
         return $this->successResponse($item);
     }
     public function index(Request $request):JsonResponse {
@@ -44,7 +43,6 @@ class IdentityVerificationController extends BaseApiController {
         $data=$request->validate(['status'=>['required','in:approved,rejected'],'rejection_reason'=>['nullable','string','max:2000']]);
         if($data['status']==='rejected'&&blank($data['rejection_reason']??null))return $this->validationErrorResponse('Vui lòng nhập lý do từ chối.');
         $verification->update(['status'=>$data['status'],'rejection_reason'=>$data['rejection_reason']??null,'reviewed_by'=>$request->user()->id,'reviewed_at'=>now()]);
-        if($data['status']==='approved')$verification->user()->update(['account_type'=>$verification->verification_type]);
         return $this->successResponse($verification);
     }
     public function document(Request $request,IdentityVerification $verification,string $side) {

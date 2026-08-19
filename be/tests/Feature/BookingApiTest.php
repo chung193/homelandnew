@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Booking;
 use App\Models\IdentityVerification;
+use App\Models\OwnerApplication;
 use App\Models\Property;
 use App\Models\PropertyType;
 use App\Models\User;
@@ -13,6 +14,24 @@ use Tests\TestCase;
 class BookingApiTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_approved_owner_keeps_customer_booking_rights(): void
+    {
+        [, $customer, $property] = $this->seedRentProperty();
+        OwnerApplication::query()->create([
+            'user_id' => $customer->id,
+            'owner_type' => 'broker',
+            'ownership_document_path' => 'test/broker.pdf',
+            'status' => 'approved',
+        ]);
+
+        $this->assertTrue($customer->fresh()->isIdentityVerified());
+        $this->actingAs($customer, 'api')->postJson('/api/v1/bookings', [
+            'property_id' => $property->id,
+            'start_date' => '2026-09-01',
+            'end_date' => '2026-09-03',
+        ])->assertCreated()->assertJsonPath('data.customer_id', $customer->id);
+    }
 
     public function test_it_can_create_booking_for_rent_property(): void
     {
