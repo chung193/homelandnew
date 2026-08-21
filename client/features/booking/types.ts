@@ -1,0 +1,4 @@
+export type CustomerBooking={id:number;property_id:number;start_date:string;end_date:string;nights:number;billing_units:number;billing_unit:string;pricing_tier:string;total_price:string;deposit_amount:string;payable_total:string;status:string;property?:{title?:string};owner?:{name?:string;email?:string;phone?:string}};
+export type CustomerBookingAction='cancel'|'complete';export type BookingStatus='pending'|'confirmed'|'in_progress'|'cancelled'|'rejected'|'completed';
+export type OwnerBooking={id:number;property_id:number;customer_id:number;start_date:string;end_date:string;nights:number;total_price:string;deposit_amount:string;payable_total:string;status:BookingStatus;note?:string|null;property?:{id?:number;title?:string};customer?:{name?:string;email?:string;phone?:string}};
+export type OwnerBookingAction='approve'|'reject'|'start'|'complete';export type OwnerBookingsResponse={data?:OwnerBooking[];error?:string};

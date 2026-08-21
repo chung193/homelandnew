@@ -7,11 +7,11 @@ import { Card } from '@astryxdesign/core/Card';
 import { Heading } from '@astryxdesign/core/Heading';
 import { Text } from '@astryxdesign/core/Text';
 import { VStack } from '@astryxdesign/core/VStack';
-import { type Locale } from '../../i18n/config';
-import { getMessages } from '../../i18n/messages';
-import { getCustomerToken } from '../../lib/auth';
-import { formatRoundedMoney } from '../../lib/currency';
-import {addCalendarMonths,calculatePricing,daysBetween,normalizePriceUnit} from '../../features/booking/pricing';
+import { type Locale } from '../../../../i18n/config';
+import { getMessages } from '../../../../i18n/messages';
+import { getCustomerToken } from '../../../../lib/auth';
+import { formatRoundedMoney } from '../../../../lib/currency';
+import {addCalendarMonths,calculatePricing,daysBetween,normalizePriceUnit} from '../../../../features/booking/pricing';
 
 type BookingPanelProps = {
     locale: Locale;

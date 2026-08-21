@@ -1,7 +1,7 @@
 import { isLocale, type Locale } from '../../i18n/config';
-import SiteTopbar from '../../components/layout/SiteTopbar';
-import SessionGuard from '../../components/layout/SessionGuard';
-import SiteFooter from '../../components/layout/SiteFooter';
+import SiteTopbar from './SiteTopbar';
+import SessionGuard from './SessionGuard';
+import SiteFooter from './SiteFooter';
 
 type LocaleLayoutProps = {
     children: React.ReactNode;

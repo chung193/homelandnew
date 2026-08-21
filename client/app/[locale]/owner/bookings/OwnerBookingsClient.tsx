@@ -9,7 +9,7 @@ import { VStack } from '@astryxdesign/core/VStack';
 import { getMessages } from '../../../../i18n/messages';
 import { isLocale, type Locale } from '../../../../i18n/config';
 import { getCustomerToken } from '../../../../lib/auth';
-import OwnerBookingCard from '../../../../components/booking/OwnerBookingCard';
+import OwnerBookingCard from './OwnerBookingCard';
 import type {OwnerBooking,OwnerBookingAction,OwnerBookingsResponse} from '../../../../features/booking/types';
 
 export default function OwnerBookingsClient() {

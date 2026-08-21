@@ -5,8 +5,8 @@ import { Heading } from '@astryxdesign/core/Heading';
 import { HStack } from '@astryxdesign/core/HStack';
 import { Text } from '@astryxdesign/core/Text';
 import { VStack } from '@astryxdesign/core/VStack';
-import HeroSlider from '../../components/home/HeroSlider';
-import PropertyInfiniteList from '../../components/property/PropertyInfiniteList';
+import HeroSlider from './HeroSlider';
+import PropertyInfiniteList from './PropertyInfiniteList';
 import { getMessages } from '../../i18n/messages';
 import { isLocale, locales, type Locale } from '../../i18n/config';
 

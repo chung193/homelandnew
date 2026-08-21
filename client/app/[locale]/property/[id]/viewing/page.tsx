@@ -6,7 +6,7 @@ import { HStack } from '@astryxdesign/core/HStack';
 import { Text } from '@astryxdesign/core/Text';
 import { VStack } from '@astryxdesign/core/VStack';
 import { isLocale, type Locale } from '../../../../../i18n/config';
-import ViewingAppointmentPanel from '../../../../../components/property/ViewingAppointmentPanel';
+import ViewingAppointmentPanel from '../ViewingAppointmentPanel';
 
 const API = process.env.BE_API_URL ?? process.env.NEXT_PUBLIC_BE_API_URL ?? 'http://127.0.0.1:8000/api';
 
